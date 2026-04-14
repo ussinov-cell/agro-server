@@ -1,202 +1,125 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
+const express = require('express'); // Подключаем движок сервера
+const cors = require('cors'); // Разрешаем браузеру делать запросы к серверу
+const app = express(); // Создаем экземпляр приложения
 
-app.use(cors());
-app.use(express.json());
+app.use(cors()); // Активируем разрешение на перекрестные запросы
+app.use(express.json()); // Учим сервер понимать формат JSON (данные от кнопок)
 
-// Глобальное состояние системы (База данных в оперативной памяти)
+// ГЛАВНАЯ БАЗА ДАННЫХ ПРИЛОЖЕНИЯ (в оперативной памяти)
 let systemState = {
-    fuel: 1000,           // Общий запас ГСМ на складе
-    totalWeight: 0,       // Общий принятый вес зерна
-    truckInWay: null,     // Данные о машине, которая едет на весы
-    
-    // Список пользователей (Владелец по умолчанию)
-    users: [
-        { id: 'Boss', pass: '12345', role: 'owner', name: 'Владелец', phone: '87000000000' }
-    ],
-
-    // Список всех участков
-    fields: [],
-
-    // Статистика по админам (рабочим)
-    workers: {},
-
-    // Архив всех выполненных работ (Отчеты)
-    reports: [],
-
-    // Логи для системы уведомлений (кто что сделал и когда)
-    logs: []
+    users: [], // Список всех: ты и твои админы (хранит логины, пароли, роли)
+    fields: [], // Список твоих 12га свеклы, кукурузы и т.д. (статусы, площади)
+    reports: [], // История всех затрат: кто, сколько ГСМ сжег и на какую сумму
+    logs: [], // Лента уведомлений (кто приехал на весы, кто закончил пахоту)
+    truckInWay: null, // Сюда попадает машина, когда админ нажал «На весы»
+    fuel: 0, // Общий остаток солярки на базе
+    // ТВОЙ НОВЫЙ РАСШИРЕННЫЙ СКЛАД
+    stock: {
+        seeds: { corn: 0, soy: 0, beet: 0 }, // Склад семян по культурам
+        fertilizers: { ammos: 0, diammos: 0, nitram: 0, selitra: 0, carbamid: 0 }, // Виды удобрений
+        glyphosate: 0 // Глифосад (Ураган) для хим. прополки
+    },
+    workers: {} // Личная статистика админов: их накопленные премии и расходы
 };
 
-// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
-
-// Добавление записи в лог уведомлений
-function addLog(text, target = null) {
-    systemState.logs.push({
-        id: Date.now(),
-        text: text,
-        target: target, // Если null — видят все, если ID — видит конкретный юзер
-        time: new Date().toLocaleTimeString('ru-RU')
-    });
-    // Храним только последние 50 уведомлений
-    if (systemState.logs.length > 50) systemState.logs.shift();
-}
-
-// --- ЭНДПОИНТЫ (API) ---
-
-// 1. Получение полного состояния системы
-app.get('/api/state', (req, res) => {
-    res.json(systemState);
-});
-
-// 2. Регистрация нового пользователя (с ролью и телефоном)
+// РЕГИСТРАЦИЯ: Создание нового профиля
 app.post('/api/register', (req, res) => {
-    const { id, pass, name, role, phone } = req.body;
-
-    if (systemState.users.find(u => u.id === id)) {
-        return res.status(400).json({ error: "Этот ID уже занят" });
-    }
-
-    const newUser = { id, pass, name, role, phone };
-    systemState.users.push(newUser);
-
-    // Если зарегистрировался админ (worker), создаем ему профиль статистики
-    if (role === 'worker') {
-        systemState.workers[id] = { 
-            name, 
-            phone, 
-            bonus: 0, 
-            fuelSpent: 0, 
-            totalBrought: 0 
-        };
-    }
-
-    addLog(`Зарегистрирован ${role === 'owner' ? 'Владелец' : 'Админ'}: ${name}`);
-    res.json({ success: true });
+    systemState.users.push(req.body); // Берем данные из формы и кладем в список юзеров
+    res.json({ success: true }); // Отвечаем браузеру, что всё прошло успешно
 });
 
-// 3. Создание / Назначение участка (Владелец)
+// СОСТОЯНИЕ: Отдает все данные в браузер каждые 5 секунд
+app.get('/api/state', (req, res) => {
+    res.json(systemState); // Просто выгружаем всё содержимое базы для отрисовки
+});
+
+// СОЗДАНИЕ УЧАСТКА (Только для тебя)
 app.post('/api/assign-field', (req, res) => {
-    const { name, area, workerId } = req.body;
+    const { name, area, workerId, ownerId } = req.body; // Получаем данные нового поля
+    const user = systemState.users.find(u => u.id === ownerId); // Ищем, кто делает запрос
     
-    const newField = {
-        id: Date.now(),
-        name,
-        area: parseFloat(area) || 0,
-        assignedTo: workerId,
-        stage: "Ожидание"
-    };
+    if (!user || user.role !== 'owner') { // Если это не Boss — запрещаем
+        return res.status(403).json({ error: "Доступ запрещен! Только владелец." });
+    }
 
-    systemState.fields.push(newField);
-    addLog(`Назначено новое поле "${name}" админу ${workerId}`, workerId);
-    res.json({ success: true });
+    const newField = { 
+        id: Date.now(), // Уникальный номер участка по времени создания
+        name, // Название (например, "Свекла 12га")
+        area: parseFloat(area), // Площадь для расчетов затрат на 1 га
+        assignedTo: workerId, // ID админа, который будет за это отвечать
+        stage: "Ожидание" // Начальный статус любого поля
+    };
+    systemState.fields.push(newField); // Добавляем в список полей
+    res.json({ success: true }); // Подтверждаем создание
 });
 
-// 4. Изменение статуса (Начало работы)
+// ИЗМЕНЕНИЕ СТАТУСА: Когда админ нажал «Начать работу»
 app.post('/api/field-status', (req, res) => {
-    const { fieldId, newStage } = req.body;
-    const field = systemState.fields.find(f => f.id == fieldId);
-    
+    const { fieldId, newStage } = req.body; // Получаем ID поля и новый статус
+    const field = systemState.fields.find(f => f.id === fieldId); // Ищем это поле в базе
     if (field) {
-        field.stage = newStage;
-        addLog(`Поле "${field.name}": статус изменен на "${newStage}"`);
-        res.json({ success: true });
-    } else {
-        res.status(404).json({ error: "Поле не найдено" });
+        field.stage = newStage; // Меняем, например, с "Ожидание" на "Пахота"
+        systemState.logs.push({ text: `Поле ${field.name}: статус ${newStage}` }); // Пишем в ленту событий
     }
+    res.json({ success: true }); // Отвечаем "Ок"
 });
 
-// 5. Завершение этапа с подачей подробного отчета (ГСМ, Техника, Деньги)
+// ЗАВЕРШЕНИЕ ЭТАПА: Списание ресурсов и расчет денег
 app.post('/api/finish-stage', (req, res) => {
-    const { fieldId, stageName, fuel, money, techMoney, comment, seeds, nextStage } = req.body;
-    const field = systemState.fields.find(f => f.id == fieldId);
+    const { fieldId, stageName, fuel, money, techMoney, comment, seeds } = req.body; // Данные из модалки админа
+    const field = systemState.fields.find(f => f.id === fieldId); // Находим участок
     
     if (field) {
-        const area = parseFloat(field.area) || 1;
-        const fVal = parseFloat(fuel) || 0;
-        const mOther = parseFloat(money) || 0;
-        const mTech = parseFloat(techMoney) || 0;
-        const totalExp = mOther + mTech;
-
-        // Создаем запись в архиве отчетов
-        const reportEntry = {
-            id: Date.now(),
-            date: new Date().toLocaleString('ru-RU'),
-            field: field.name,
-            worker: systemState.workers[field.assignedTo]?.name || field.assignedTo,
-            work: stageName,
-            fuel: fVal,
-            techCost: mTech,
-            otherCost: mOther,
-            totalCost: totalExp,
-            perHa: (totalExp / area).toFixed(0), // Стоимость 1 Га
-            seeds: seeds || 0,
-            comment: comment || "-"
-        };
-
-        systemState.reports.unshift(reportEntry);
+        const cost = parseFloat(money) + parseFloat(techMoney); // Считаем общие затраты за этап
+        const perHa = (cost / field.area).toFixed(0); // Считаем себестоимость на 1 гектар
         
-        // Списание ресурсов и обновление статистики
-        systemState.fuel -= fVal;
-        if (systemState.workers[field.assignedTo]) {
-            systemState.workers[field.assignedTo].fuelSpent += fVal;
-        }
+        systemState.reports.push({ // Сохраняем подробный отчет для тебя
+            field: field.name, // Название поля
+            worker: field.assignedTo, // Кто работал
+            work: stageName, // Что делали (напр. "Боронование")
+            totalCost: cost, // Сколько всего денег ушло
+            techCost: techMoney, // Сколько из них на ремонт/запчасти
+            perHa: perHa, // Нагрузка на 1 гектар
+            comment: comment // Заметки админа (напр. "Сломался лемех")
+        });
 
-        // Переход на следующий этап
-        field.stage = nextStage;
+        systemState.fuel -= parseFloat(fuel || 0); // Вычитаем солярку из общего бака
+        if (!systemState.workers[field.assignedTo]) systemState.workers[field.assignedTo] = { bonus: 0 }; // Если админ новый — создаем ему кошелек
+        systemState.workers[field.assignedTo].bonus += 5000; // Начисляем премию за закрытый этап (напр. 5000)
         
-        addLog(`Завершен этап "${stageName}" на поле "${field.name}"`);
-        res.json({ success: true });
-    } else {
-        res.status(404).json({ error: "Поле не найдено" });
+        field.stage = req.body.nextStage; // Переводим поле на следующий этап (напр. к Посеву)
     }
+    res.json({ success: true }); // Готово
 });
 
-// 6. Пополнение ГСМ (Владелец)
+// ПОПОЛНЕНИЕ СКЛАДА (Твоя панель управления)
 app.post('/api/stock-up', (req, res) => {
-    const amount = parseFloat(req.body.amount) || 0;
-    systemState.fuel += amount;
-    addLog(`Склад ГСМ пополнен на ${amount} л`);
-    res.json({ success: true });
+    const { category, item, amount } = req.body; // Что привезли и сколько
+    const val = parseFloat(amount) || 0; // Превращаем текст в число
+
+    if (category === 'fuel') systemState.fuel += val; // Если солярка — льем в бак
+    else if (category === 'glyphosate') systemState.stock.glyphosate += val; // Если яд — на склад химии
+    else if (category === 'seeds') systemState.stock.seeds[item] += val; // Если семена — в нужный мешок
+    else if (category === 'fertilizers') systemState.stock.fertilizers[item] += val; // Удобрения — по видам
+    
+    res.json({ success: true }); // Подтверждаем приход
 });
 
-// 7. Весовая: Отправка машины (Админ)
+// ВЕСОВАЯ: Отправка машины с поля
 app.post('/api/send-truck', (req, res) => {
-    const { model, plate, workerId } = req.body;
-    systemState.truckInWay = { 
-        model, 
-        plate, 
-        workerId, 
-        time: Date.now() 
-    };
-    addLog(`Машина ${plate} отправлена на весы`, 'Boss');
-    res.json({ success: true });
+    systemState.truckInWay = req.body; // Записываем госномер и марку машины в статус "В пути"
+    systemState.logs.push({ text: `🚚 Машина ${req.body.plate} едет на весы!`, target: 'owner' }); // Шлем тебе уведомление
+    res.json({ success: true }); // Ок
 });
 
-// 8. Весовая: Приемка веса (Владелец)
+// ВЕСОВАЯ: Твое подтверждение веса
 app.post('/api/accept-weight', (req, res) => {
-    const weight = parseFloat(req.body.weight) || 0;
-    const truck = systemState.truckInWay;
-    
-    if (truck && systemState.workers[truck.workerId]) {
-        systemState.workers[truck.workerId].totalBrought += weight;
-        // Начисление премии: например, 0.5 тенге за 1 кг
-        systemState.workers[truck.workerId].bonus += Math.floor(weight * 0.5);
-    }
-
-    systemState.totalWeight += weight;
-    systemState.truckInWay = null;
-    
-    addLog(`Принято ${weight} кг зерна. Машина разгружена.`);
-    res.json({ success: true });
+    const weight = req.body.weight; // Вес, который ты ввел в весовую форму
+    systemState.logs.push({ text: `✅ Принято: ${weight} кг от ${systemState.truckInWay.plate}` }); // Пишем в историю
+    systemState.truckInWay = null; // Освобождаем весы для следующей машины
+    res.json({ success: true }); // Ок
 });
 
-// --- ЗАПУСК СЕРВЕРА ---
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`---------------------------------------`);
-    console.log(`AGRO-SYSTEM SERVER v6.0 ЗАПУЩЕН`);
-    console.log(`Порт: ${PORT}`);
-    console.log(`---------------------------------------`);
-});
+// ЗАПУСК: Сервер начинает слушать запросы
+const PORT = process.env.PORT || 3000; // Берем порт из настроек хостинга или 3000
+app.listen(PORT, () => console.log(`Система АГРО запущена на порту ${PORT}`)); // Сообщение в консоль при старте
