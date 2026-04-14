@@ -93,92 +93,186 @@
         </div>
     </div>
 
-    <script>
-        const API_URL = 'https://agro-server-nuwi.onrender.com';
-        let currentUser = localStorage.getItem('agro_user') || '';
-        let lastKnownState = null;
+   <script>
+    const API_URL = 'https://agro-server-nuwi.onrender.com';
+    let currentUser = localStorage.getItem('agro_user') || '';
+    let lastKnownState = null;
 
-        const users = {
-            'Boss': { pass: '12345', role: 'owner', name: 'Владелец' },
-            'M1': { pass: '5555', role: 'worker', name: 'Алексей (M1)' },
-            'M2': { pass: '6666', role: 'worker', name: 'Иван (M2)' }
-        };
+    const users = {
+        'Boss': { pass: '12345', role: 'owner', name: 'Владелец' },
+        'M1': { pass: '5555', role: 'worker', name: 'Алексей (M1)' },
+        'M2': { pass: '6666', role: 'worker', name: 'Иван (M2)' }
+    };
 
-        function showNotification(text, type = 'info') {
-            const zone = document.getElementById('notification-zone');
-            const color = type === 'truck' ? 'bg-blue-600' : 'bg-emerald-600';
-            const el = document.createElement('div');
-            el.className = `alert-pop pointer-events-auto ${color} text-white p-4 rounded-2xl shadow-2xl flex items-center gap-3 border-2 border-white/20`;
-            el.innerHTML = `<span class="text-xl">${type === 'truck' ? '🚛' : '💰'}</span><p class="text-[11px] font-bold leading-tight">${text}</p>`;
-            zone.appendChild(el);
-            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 500); }, 8000);
+    // ФУНКЦИЯ ВХОДА (ИСПРАВЛЕНА)
+    function login() {
+        const id = document.getElementById('login-id').value;
+        const pass = document.getElementById('login-pass').value;
+
+        if (users[id] && users[id].pass === pass) {
+            currentUser = id;
+            localStorage.setItem('agro_user', id);
+            initApp(); // Запускаем приложение
+        } else {
+            alert("Неверный логин или пароль!");
         }
+    }
 
-        async function refreshData() {
-            try {
-                const res = await fetch(`${API_URL}/api/state`);
-                const data = await res.json();
+    function logout() {
+        localStorage.removeItem('agro_user');
+        location.reload();
+    }
 
-                // Проверка новых уведомлений для Boss
-                if (currentUser === 'Boss' && lastKnownState) {
-                    if (data.truckInWay && (!lastKnownState.truckInWay || lastKnownState.truckInWay.plate !== data.truckInWay.plate)) {
-                        showNotification(`МАШИНА В ПУТИ: ${data.truckInWay.model} (${data.truckInWay.plate}). Иди на весовую!`, 'truck');
-                    }
+    // ИНИЦИАЛИЗАЦИЯ ЭКРАНОВ
+    function initApp() {
+        if (!currentUser) return;
+        
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app-header').classList.remove('hidden');
+        document.getElementById('user-info').innerText = users[currentUser].name;
+
+        if (users[currentUser].role === 'owner') {
+            document.getElementById('owner-tabs').classList.remove('hidden');
+            switchTab('owner-main');
+        } else {
+            document.getElementById('worker-tabs').classList.remove('hidden');
+            switchWorkerTab('worker-main');
+        }
+        refreshData();
+    }
+
+    // УВЕДОМЛЕНИЯ
+    function showNotification(text, type = 'info') {
+        const zone = document.getElementById('notification-zone');
+        const color = type === 'truck' ? 'bg-blue-600' : 'bg-emerald-600';
+        const el = document.createElement('div');
+        el.className = `alert-pop pointer-events-auto ${color} text-white p-4 rounded-2xl shadow-2xl flex items-center gap-3 border-2 border-white/20 mb-2`;
+        el.innerHTML = `<span class="text-xl">${type === 'truck' ? '🚛' : '💰'}</span><p class="text-[11px] font-bold leading-tight">${text}</p>`;
+        zone.appendChild(el);
+        setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 500); }, 8000);
+    }
+
+    // ОБНОВЛЕНИЕ ДАННЫХ
+    async function refreshData() {
+        try {
+            const res = await fetch(`${API_URL}/api/state`);
+            if (!res.ok) throw new Error('Ошибка сети');
+            const data = await res.json();
+
+            // Проверка уведомлений для Boss
+            if (currentUser === 'Boss' && lastKnownState) {
+                if (data.truckInWay && (!lastKnownState.truckInWay || lastKnownState.truckInWay.plate !== data.truckInWay.plate)) {
+                    showNotification(`МАШИНА В ПУТИ: ${data.truckInWay.model} (${data.truckInWay.plate}).`, 'truck');
                 }
-                lastKnownState = data;
+            }
+            lastKnownState = data;
 
-                // Обновление таблицы отчетов для Boss
-                const reportTable = document.getElementById('boss-report-table');
-                if (reportTable && data.workers) {
-                    reportTable.innerHTML = Object.entries(data.workers).map(([id, w]) => `
-                        <tr class="border-b">
-                            <td class="p-3 font-bold">${w.name}</td>
-                            <td class="p-3 text-red-500">-${w.fuelSpent || 0}</td>
-                            <td class="p-3 text-blue-600">${w.totalBrought || 0}</td>
-                            <td class="p-3 font-bold text-emerald-600">${w.bonus.toLocaleString()} ₸</td>
-                        </tr>
-                    `).join('');
-                }
+            // Обновление цифр ГСМ и Урожая
+            if(document.getElementById('fuel-display')) {
+                document.getElementById('fuel-display').innerText = (data.fuel || 0).toLocaleString() + ' л';
+                document.getElementById('weight-display').innerText = (data.totalWeight || 0).toLocaleString() + ' кг';
+            }
 
-                // Обновление истории для Админа
-                const historyList = document.getElementById('worker-history-list');
-                if (historyList && data.workers[currentUser]) {
-                    const w = data.workers[currentUser];
-                    historyList.innerHTML = `
-                        <div class="bg-slate-50 p-4 rounded-xl border flex justify-between"><span>ГСМ потрачено:</span> <b>${w.fuelSpent || 0} л</b></div>
-                        <div class="bg-slate-50 p-4 rounded-xl border flex justify-between"><span>Урожая привезено:</span> <b>${w.totalBrought || 0} кг</b></div>
-                        <div class="bg-slate-50 p-4 rounded-xl border flex justify-between"><span>Заработано премии:</span> <b class="text-emerald-600">${w.bonus || 0} ₸</b></div>
+            // Обновление Весовой
+            const list = document.getElementById('transit-list');
+            if(list) {
+                if(data.truckInWay) {
+                    list.innerHTML = `
+                        <div class="bg-blue-50 border-2 border-blue-100 p-6 rounded-[2.5rem] text-left">
+                            <p class="font-black text-blue-900 text-xl">${data.truckInWay.model}</p>
+                            <p class="font-bold text-blue-600 text-sm mb-6">${data.truckInWay.plate}</p>
+                            <input id="weight-input" type="number" placeholder="Вес (кг)" class="w-full p-4 border rounded-2xl mb-4 font-black">
+                            <button onclick="acceptWeight()" class="w-full bg-blue-600 text-white p-4 rounded-2xl font-black text-[10px] uppercase">Принять</button>
+                        </div>
                     `;
+                } else {
+                    list.innerHTML = `<div class="py-10 text-gray-300 font-bold uppercase italic">Машин нет</div>`;
                 }
+            }
 
-                // Прочие обновления (ГСМ, Весовая и т.д.) - из старого кода
-                if(document.getElementById('fuel-display')) {
-                    document.getElementById('fuel-display').innerText = data.fuel.toLocaleString() + ' л';
-                    document.getElementById('weight-display').innerText = data.totalWeight.toLocaleString() + ' кг';
-                }
-            } catch(e) {}
-        }
+            // Обновление отчетов
+            const reportTable = document.getElementById('boss-report-table');
+            if (reportTable && data.workers) {
+                reportTable.innerHTML = Object.entries(data.workers).map(([id, w]) => `
+                    <tr class="border-b">
+                        <td class="p-3 font-bold">${w.name}</td>
+                        <td class="p-3 text-red-500">-${w.fuelSpent || 0}</td>
+                        <td class="p-3 text-blue-600">${w.totalBrought || 0}</td>
+                        <td class="p-3 font-bold text-emerald-600">${(w.bonus || 0).toLocaleString()} ₸</td>
+                    </tr>
+                `).join('');
+            }
+        } catch(e) { console.error("Ошибка связи:", e); }
+    }
 
-        // ЛОГИКА ВКЛАДОК
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.querySelectorAll('#owner-tabs button').forEach(b => b.classList.remove('active-tab', 'bg-white'));
-            document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById('tab-' + tabId.split('-')[1]).classList.add('active-tab');
-        }
+    // Переключение вкладок (Boss)
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.querySelectorAll('#owner-tabs button').forEach(b => b.classList.remove('active-tab', 'bg-white'));
+        document.getElementById(tabId).classList.remove('hidden');
+        document.getElementById('tab-' + tabId.split('-')[1]).classList.add('active-tab');
+    }
 
-        function switchWorkerTab(tabId) {
-            document.querySelectorAll('.worker-tab-content').forEach(c => c.classList.add('hidden'));
-            document.querySelectorAll('#worker-tabs button').forEach(b => b.classList.remove('active-tab', 'bg-white'));
-            document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById('tab-w-' + tabId.split('-')[1]).classList.add('active-tab');
-        }
+    // Переключение вкладок (Админ)
+    function switchWorkerTab(tabId) {
+        document.querySelectorAll('.worker-tab-content').forEach(c => c.classList.add('hidden'));
+        document.querySelectorAll('#worker-tabs button').forEach(b => b.classList.remove('active-tab', 'bg-white'));
+        document.getElementById(tabId).classList.remove('hidden');
+        document.getElementById('tab-w-' + tabId.split('-')[1]).classList.add('active-tab');
+    }
 
-        function login() { /* как в прошлом коде */ }
-        function logout() { /* как в прошлом коде */ }
-        function initApp() { /* как в прошлом коде */ }
+    // Функции кнопок (Админ)
+    function openTruckModal() { document.getElementById('truck-modal').classList.remove('hidden'); }
+    function closeModal() { document.getElementById('truck-modal').classList.add('hidden'); }
 
-        setInterval(refreshData, 4000); // Опрос сервера каждые 4 сек
-    </script>
+    async function confirmSendTruck() {
+        const m = document.getElementById('t-model').value;
+        const p = document.getElementById('t-plate').value;
+        await fetch(`${API_URL}/api/send-truck`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ model: m, plate: p, workerId: currentUser })
+        });
+        closeModal();
+        refreshData();
+    }
+
+    async function saveCosts() {
+        const f = document.getElementById('w-fuel').value;
+        const m = document.getElementById('w-money').value;
+        await fetch(`${API_URL}/api/spend-resources`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ fuel: f, money: m, workerId: currentUser })
+        });
+        alert("Сохранено!");
+        refreshData();
+    }
+
+    // Функции кнопок (Boss)
+    async function acceptWeight() {
+        const w = document.getElementById('weight-input').value;
+        await fetch(`${API_URL}/api/accept-weight`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ weight: w, workerId: 'M1' })
+        });
+        refreshData();
+    }
+
+    async function addStock() {
+        const val = document.getElementById('stock-val').value;
+        await fetch(`${API_URL}/api/stock-up`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ amount: val })
+        });
+        refreshData();
+    }
+
+    // Авто-вход при загрузке
+    if (currentUser) initApp();
+    setInterval(refreshData, 5000);
+</script>
 </body>
 </html>
