@@ -1,0 +1,116 @@
+/* Общие настройки */
+.hidden { display: none !important; }
+input, select { outline: none; }
+body { -webkit-tap-highlight-color: transparent; }
+
+/* Кастомные классы для дизайна */
+.input-field {
+    width: 100%;
+    padding: 1.25rem;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 1.5rem;
+    font-weight: 700;
+}
+
+.select-field {
+    width: 100%;
+    padding: 1rem;
+    background-color: #eff6ff;
+    border: 2px solid #dbeafe;
+    border-radius: 1.5rem;
+    font-weight: 900;
+    color: #2563eb;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.btn-primary {
+    width: 100%;
+    background-color: #10b981;
+    color: white;
+    font-weight: 900;
+    padding: 1.25rem;
+    border-radius: 1.5rem;
+    text-transform: uppercase;
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+}
+
+.btn-secondary {
+    width: 100%;
+    background-color: #2563eb;
+    color: white;
+    font-weight: 900;
+    padding: 1.25rem;
+    border-radius: 1.5rem;
+    text-transform: uppercase;
+}
+
+.btn-dark {
+    width: 100%;
+    background-color: #0f172a;
+    color: white;
+    padding: 1.25rem;
+    border-radius: 2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.btn-link {
+    width: 100%;
+    color: #94a3b8;
+    font-weight: 700;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+}
+
+.btn-logout {
+    font-size: 0.65rem;
+    font-weight: 900;
+    color: #f87171;
+    border: 1px solid #fee2e2;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.75rem;
+}
+
+.btn-cancel {
+    width: 100%;
+    margin-top: 0.5rem;
+    color: #cbd5e1;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    padding: 0.5rem;
+}
+
+.btn-round {
+    background-color: #10b981;
+    color: white;
+    padding: 4rem;
+    border-radius: 9999px;
+    font-weight: 900;
+    text-transform: uppercase;
+    border: 12px solid white;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: white; border-bottom: 1px solid #e2e8f0; font-size: 0.55rem; font-weight: 900; text-transform: uppercase; position: sticky; top: 76px; z-index: 40; }
+.nav-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); background: white; border-bottom: 1px solid #e2e8f0; font-size: 0.55rem; font-weight: 900; text-transform: uppercase; position: sticky; top: 76px; z-index: 40; }
+
+.tab-btn { color: #94a3b8; }
+.active-tab { border-bottom: 4px solid #10b981; color: #10b981; }
+
+.role-badge { font-size: 0.55rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.modal-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.modal-content { background: white; width: 100%; max-width: 24rem; border-radius: 3rem; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+
+.scales-container { background: white; padding: 2.5rem; border-radius: 3rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); text-align: center; border: 4px dashed #f1f5f9; }
+
+/* Анимация уведомлений */
+.notif-anim { animation: slideDown 0.5s ease-out; }
+@keyframes slideDown { 
+    from { transform: translateY(-100%); opacity: 0; } 
+    to { transform: translateY(0); opacity: 1; } 
+}
