@@ -2,143 +2,258 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>АГРО-УПРАВЛЕНИЕ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AGRO-SYSTEM 2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .hidden { display: none !important; }
-        .alert-card { animation: slideIn 0.4s ease-out; cursor: pointer; pointer-events: auto; }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .active-tab { border-bottom: 4px solid #059669; color: #059669; font-weight: 900; }
+        .alert-anim { animation: slideIn 0.4s ease-out; cursor: pointer; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-20">
+<body class="bg-slate-50 text-slate-900 font-sans">
 
-    <div id="notif-area" class="fixed top-20 right-4 left-4 z-[300] space-y-3 pointer-events-none"></div>
+    <div id="notif-zone" class="fixed top-20 left-4 right-4 z-[100] space-y-2 pointer-events-none"></div>
 
-    <div class="bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-50">
-        <span class="font-black text-emerald-600 tracking-tighter">AGRO-BOSS</span>
-        <button onclick="logout()" class="text-[10px] bg-red-50 text-red-500 px-3 py-1 rounded-lg">ВЫХОД</button>
-    </div>
-
-    <div id="owner-tabs" class="hidden grid grid-cols-4 bg-white border-b sticky top-[56px] z-40">
-        <button onclick="switchTab('owner-main')" id="btn-main" class="p-4 text-[10px] uppercase">Поля</button>
-        <button onclick="switchTab('owner-scales')" id="btn-scales" class="p-4 text-[10px] uppercase">Весовая</button>
-        <button onclick="switchTab('owner-stock')" id="btn-stock" class="p-4 text-[10px] uppercase">Склад</button>
-        <button onclick="switchTab('owner-reports')" id="btn-reports" class="p-4 text-[10px] uppercase">Отчеты</button>
-    </div>
-
-    <div id="app-content" class="p-4 max-w-lg mx-auto">
-        
-        <div id="owner-main" class="tab-content hidden space-y-4">
-            <h2 class="font-black text-xs uppercase text-slate-400">Мониторинг участков</h2>
-            <div id="fields-list" class="space-y-3">
-                </div>
+    <div id="login-screen" class="flex items-center justify-center min-h-screen p-6">
+        <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-sm text-center border border-slate-100">
+            <h1 class="text-2xl font-black text-emerald-600 mb-8 uppercase tracking-widest">Авторизация</h1>
+            <input id="login-id" type="text" placeholder="Логин (Boss / M1)" class="w-full p-4 mb-4 bg-slate-50 border rounded-2xl outline-none">
+            <input id="login-pass" type="password" placeholder="Пароль" class="w-full p-4 mb-8 bg-slate-50 border rounded-2xl outline-none">
+            <button onclick="login()" class="w-full bg-emerald-600 text-white font-black p-5 rounded-2xl shadow-lg shadow-emerald-100 uppercase">Войти</button>
         </div>
+    </div>
 
-        <div id="owner-scales" class="tab-content hidden">
-            <div id="scales-card" class="bg-white p-8 rounded-[2rem] shadow-xl text-center">
-                <p class="text-slate-300 font-bold uppercase text-xs italic">Ожидание машин...</p>
+    <div id="app-main" class="hidden">
+        <div class="bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-50">
+            <div class="flex flex-col">
+                <span class="font-black text-emerald-600 text-[10px] uppercase">Agro-Control</span>
+                <span id="user-display" class="text-[9px] font-bold text-slate-400"></span>
             </div>
+            <button onclick="logout()" class="text-[10px] font-bold text-red-400 border border-red-50 px-3 py-1 rounded-lg">ВЫЙТИ</button>
         </div>
 
+        <div id="nav-owner" class="hidden grid grid-cols-4 bg-white border-b sticky top-[52px] z-40">
+            <button onclick="showTab('owner-fields', this)" class="p-4 text-[9px] uppercase font-bold tab-btn active-tab">Поля</button>
+            <button onclick="showTab('owner-scales', this)" class="p-4 text-[9px] uppercase font-bold tab-btn">Весовая</button>
+            <button onclick="showTab('owner-stock', this)" class="p-4 text-[9px] uppercase font-bold tab-btn">Склад</button>
+            <button onclick="showTab('owner-reports', this)" class="p-4 text-[9px] uppercase font-bold tab-btn">Отчеты</button>
         </div>
+
+        <div id="nav-worker" class="hidden grid grid-cols-3 bg-white border-b sticky top-[52px] z-40">
+            <button onclick="showWorkerTab('worker-form', this)" class="p-4 text-[9px] uppercase font-bold w-tab-btn active-tab">Расходы</button>
+            <button onclick="showWorkerTab('worker-harvest', this)" class="p-4 text-[9px] uppercase font-bold w-tab-btn">Уборка</button>
+            <button onclick="showWorkerTab('worker-status', this)" class="p-4 text-[9px] uppercase font-bold w-tab-btn">Статистика</button>
+        </div>
+
+        <div class="p-4 max-w-lg mx-auto">
+            <div id="owner-fields" class="tab-content space-y-3"></div>
+            <div id="owner-scales" class="tab-content hidden">
+                <div id="scales-ui" class="bg-white p-8 rounded-3xl shadow-lg text-center border-2 border-dashed border-slate-200"></div>
+            </div>
+            <div id="owner-stock" class="tab-content hidden">
+                <div class="bg-white p-6 rounded-3xl shadow-sm">
+                    <p id="fuel-stat" class="text-3xl font-black text-emerald-600 mb-6">... л</p>
+                    <input id="stock-add" type="number" placeholder="Пополнить (литры)" class="w-full p-4 bg-slate-50 rounded-xl mb-4 border">
+                    <button onclick="addStock()" class="w-full bg-emerald-600 text-white p-4 rounded-xl font-bold uppercase">Обновить баланс</button>
+                </div>
+            </div>
+            <div id="owner-reports" class="tab-content hidden">
+                <div class="bg-white rounded-3xl shadow-sm overflow-hidden">
+                    <table class="w-full text-left text-[11px]">
+                        <thead class="bg-slate-50"><tr><th class="p-4">Сотрудник</th><th class="p-4 text-center">ГСМ</th><th class="p-4 text-center">Вес</th><th class="p-4 text-right">Бонус</th></tr></thead>
+                        <tbody id="report-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="worker-form" class="worker-tab-content space-y-4">
+                <div class="bg-white p-6 rounded-3xl shadow-sm">
+                    <h3 class="text-[10px] font-bold text-slate-400 uppercase mb-4">Списать ГСМ</h3>
+                    <input id="w-fuel" type="number" placeholder="Количество литров" class="w-full p-4 bg-slate-50 rounded-2xl mb-4 border font-bold">
+                    <button onclick="saveSpent()" class="w-full bg-slate-800 text-white p-4 rounded-2xl font-bold uppercase">Сохранить</button>
+                </div>
+            </div>
+            <div id="worker-harvest" class="worker-tab-content hidden text-center">
+                <button onclick="openTruckModal()" class="bg-emerald-600 text-white p-10 rounded-full font-black uppercase shadow-2xl shadow-emerald-200 border-8 border-white">🚛 Отправить<br>машину</button>
+            </div>
+            <div id="worker-status" class="worker-tab-content hidden space-y-3"></div>
+        </div>
+    </div>
+
+    <div id="truck-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-[200]">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8">
+            <input id="t-model" placeholder="Марка машины" class="w-full p-4 bg-slate-50 border rounded-2xl mb-3 font-bold">
+            <input id="t-plate" placeholder="ГОС. НОМЕР" class="w-full p-4 bg-slate-50 border rounded-2xl mb-6 text-center font-black text-xl uppercase tracking-widest">
+            <button onclick="sendTruck()" class="w-full bg-emerald-600 text-white p-5 rounded-2xl font-black uppercase">В ПУТЬ</button>
+            <button onclick="closeModal()" class="w-full mt-2 text-slate-400 font-bold p-2 text-xs">ОТМЕНА</button>
+        </div>
+    </div>
 
     <script>
         const API_URL = 'https://agro-server-nuwi.onrender.com';
-        let currentUser = localStorage.getItem('agro_user') || 'Boss'; 
-        let lastTruckStatus = null;
-        let lastAcceptedId = null;
+        let currentUser = localStorage.getItem('agro_user') || '';
+        let lastState = null;
+
+        const users = {
+            'Boss': { pass: '12345', role: 'owner', name: 'Владелец' },
+            'M1': { pass: '5555', role: 'worker', name: 'Алексей (Админ)' },
+            'M2': { pass: '6666', role: 'worker', name: 'Иван (Админ)' }
+        };
+
+        function login() {
+            const id = document.getElementById('login-id').value;
+            const pass = document.getElementById('login-pass').value;
+            if (users[id] && users[id].pass === pass) {
+                currentUser = id;
+                localStorage.setItem('agro_user', id);
+                location.reload();
+            } else alert("Ошибка входа");
+        }
+
+        function logout() { localStorage.removeItem('agro_user'); location.reload(); }
+
+        function init() {
+            if (!currentUser) return;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app-main').classList.remove('hidden');
+            document.getElementById('user-display').innerText = users[currentUser].name;
+
+            if (users[currentUser].role === 'owner') {
+                document.getElementById('nav-owner').classList.remove('hidden');
+                document.querySelectorAll('.worker-tab-content').forEach(e => e.classList.add('hidden'));
+            } else {
+                document.getElementById('nav-worker').classList.remove('hidden');
+                document.querySelectorAll('.tab-content').forEach(e => e.classList.add('hidden'));
+            }
+            refresh();
+            setInterval(refresh, 4000);
+        }
 
         async function refresh() {
-            const res = await fetch(`${API_URL}/api/state`);
-            const data = await res.json();
+            try {
+                const res = await fetch(`${API_URL}/api/state`);
+                const data = await res.json();
 
-            // 1. Уведомление для BOSS: Машина в пути
-            if (currentUser === 'Boss' && data.truckInWay && lastTruckStatus !== data.truckInWay.plate) {
-                createAlert(`🚛 ЕДЕТ МАШИНА: ${data.truckInWay.model}. Нажми, чтобы принять!`, () => switchTab('owner-scales'));
-                lastTruckStatus = data.truckInWay.plate;
+                // Уведомления для Boss
+                if (currentUser === 'Boss' && lastState) {
+                    if (data.truckInWay && (!lastState.truckInWay || lastState.truckInWay.time !== data.truckInWay.time)) {
+                        createNote(`🚛 ЕДЕТ МАШИНА: ${data.truckInWay.model}. Нажми для приемки!`, () => showTab('owner-scales', document.querySelector('[onclick*="scales"]')));
+                    }
+                    if (data.fuel < 150) {
+                        createNote(`⚠️ МАЛО ГСМ: Осталось всего ${data.fuel}л!`, () => showTab('owner-stock', document.querySelector('[onclick*="stock"]')), 'bg-orange-500');
+                    }
+                }
+
+                // Уведомление для Админа
+                if (currentUser !== 'Boss' && data.lastAccepted && (!lastState || lastState.lastAccepted?.time !== data.lastAccepted.time)) {
+                    if (data.lastAccepted.workerId === currentUser) {
+                        createNote(`✅ ВЕС ПРИНЯТ: ${data.lastAccepted.weight}кг записано!`, null, 'bg-emerald-600');
+                    }
+                }
+
+                lastState = data;
+                updateUI(data);
+            } catch (e) { console.log("Offline"); }
+        }
+
+        function updateUI(data) {
+            // Поля
+            const fieldsEl = document.getElementById('owner-fields');
+            if (fieldsEl) {
+                fieldsEl.innerHTML = data.fields.map(f => `
+                    <div class="bg-white p-5 rounded-3xl shadow-sm border-l-8 border-emerald-500">
+                        <div class="flex justify-between items-center">
+                            <div><p class="text-[10px] font-black text-slate-400 uppercase">${f.name}</p><h3 class="text-lg font-black">${f.culture}</h3></div>
+                            <span class="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[9px] font-black uppercase">${f.stage}</span>
+                        </div>
+                    </div>
+                `).join('');
             }
 
-            // 2. Уведомление для BOSS: Мало ГСМ
-            if (currentUser === 'Boss' && data.fuel < 200) {
-                createAlert(`⚠️ КРИТИЧЕСКИЙ ОСТАТОК ГСМ: ${data.fuel}л! Пополни склад.`, () => switchTab('owner-stock'), 'bg-orange-600');
-            }
-
-            // 3. Уведомление для АДМИНА: Вес принят
-            if (currentUser !== 'Boss' && data.lastAcceptedTruck && data.lastAcceptedTruck.time !== lastAcceptedId) {
-                if (data.lastAcceptedTruck.workerId === currentUser) {
-                    createAlert(`✅ ВЕС ПРИНЯТ: ${data.lastAcceptedTruck.weight}кг засчитано в премию!`, null, 'bg-emerald-600');
-                    lastAcceptedId = data.lastAcceptedTruck.time;
+            // Весовая
+            const scalesEl = document.getElementById('scales-ui');
+            if (scalesEl) {
+                if (data.truckInWay) {
+                    scalesEl.innerHTML = `
+                        <p class="text-[10px] font-black text-blue-400 mb-2 uppercase">Ожидание веса</p>
+                        <h2 class="text-2xl font-black">${data.truckInWay.model}</h2>
+                        <p class="text-slate-400 mb-6">${data.truckInWay.plate}</p>
+                        <input id="net-weight" type="number" placeholder="Вес нетто (кг)" class="w-full p-5 bg-slate-50 rounded-2xl border-2 border-blue-100 text-center font-black text-2xl mb-4">
+                        <button onclick="acceptWeight()" class="w-full bg-blue-600 text-white p-5 rounded-2xl font-black shadow-lg">ЗАФИКСИРОВАТЬ</button>
+                    `;
+                } else {
+                    scalesEl.innerHTML = `<p class="text-slate-300 font-bold italic uppercase text-xs py-10 tracking-widest">Машин в пути нет</p>`;
                 }
             }
 
-            renderFields(data.fields);
-            renderScales(data.truckInWay);
-        }
-
-        function createAlert(text, action, color = 'bg-blue-600') {
-            const area = document.getElementById('notif-area');
-            const el = document.createElement('div');
-            el.className = `${color} text-white p-4 rounded-2xl shadow-2xl alert-card flex justify-between items-center`;
-            el.innerHTML = `<span class="text-[11px] font-black uppercase">${text}</span>`;
-            if (action) el.onclick = () => { action(); el.remove(); };
-            else el.onclick = () => el.remove();
-            area.appendChild(el);
-            setTimeout(() => el.remove(), 10000);
-        }
-
-        function renderFields(fields) {
-            const list = document.getElementById('fields-list');
-            if(!list) return;
-            list.innerHTML = fields.map(f => `
-                <div class="bg-white p-5 rounded-3xl shadow-sm border-l-4 border-emerald-500">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h4 class="font-black text-lg">${f.name} <span class="text-[10px] text-slate-400">(${f.area})</span></h4>
-                            <p class="text-xs font-bold text-emerald-600 uppercase">${f.culture}</p>
-                        </div>
-                        <span class="bg-slate-100 px-3 py-1 rounded-full text-[10px] font-black uppercase text-slate-500">${f.stage}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function renderScales(truck) {
-            const card = document.getElementById('scales-card');
-            if(!card) return;
-            if(truck) {
-                card.innerHTML = `
-                    <h3 class="font-black text-blue-600 mb-4 uppercase text-xs tracking-widest">Приемка урожая</h3>
-                    <p class="text-2xl font-black mb-1">${truck.model}</p>
-                    <p class="text-slate-400 font-bold mb-6">${truck.plate}</p>
-                    <input id="netto" type="number" placeholder="Чистый вес (кг)" class="w-full p-4 bg-slate-50 rounded-2xl mb-4 text-center font-black text-xl border-2 border-blue-100">
-                    <button onclick="confirmWeight()" class="w-full bg-blue-600 text-white p-5 rounded-2xl font-black uppercase shadow-lg shadow-blue-100">Зафиксировать вес</button>
-                `;
-            } else {
-                card.innerHTML = `<p class="text-slate-300 font-bold uppercase text-xs italic py-10">Машин в пути нет</p>`;
+            // Склад и Отчеты
+            if (document.getElementById('fuel-stat')) document.getElementById('fuel-stat').innerText = data.fuel + ' л';
+            const tbody = document.getElementById('report-body');
+            if (tbody) {
+                tbody.innerHTML = Object.entries(data.workers).map(([id, w]) => `
+                    <tr class="border-b"><td class="p-4 font-bold">${w.name}</td><td class="p-4 text-center text-red-500">-${w.fuelSpent}</td><td class="p-4 text-center text-blue-600">${w.totalBrought}</td><td class="p-4 text-right font-black text-emerald-600">${w.bonus} ₸</td></tr>
+                `).join('');
             }
         }
 
-        async function confirmWeight() {
-            const w = document.getElementById('netto').value;
-            await fetch(`${API_URL}/api/accept-weight`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ weight: w })
-            });
+        // Вспомогательные функции
+        function createNote(text, action, color = 'bg-blue-600') {
+            const zone = document.getElementById('notif-zone');
+            const div = document.createElement('div');
+            div.className = `${color} text-white p-4 rounded-2xl shadow-2xl alert-anim pointer-events-auto flex justify-between items-center`;
+            div.innerHTML = `<span class="text-[10px] font-black uppercase leading-tight">${text}</span>`;
+            div.onclick = () => { if(action) action(); div.remove(); };
+            zone.appendChild(div);
+            setTimeout(() => div.remove(), 8000);
+        }
+
+        function showTab(id, btn) {
+            document.querySelectorAll('.tab-content').forEach(e => e.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
+            btn.classList.add('active-tab');
+        }
+
+        function showWorkerTab(id, btn) {
+            document.querySelectorAll('.worker-tab-content').forEach(e => e.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            document.querySelectorAll('.w-tab-btn').forEach(b => b.classList.remove('active-tab'));
+            btn.classList.add('active-tab');
+        }
+
+        function openTruckModal() { document.getElementById('truck-modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('truck-modal').classList.add('hidden'); }
+
+        // API CALLS
+        async function sendTruck() {
+            const m = document.getElementById('t-model').value;
+            const p = document.getElementById('t-plate').value;
+            if(!m || !p) return;
+            await fetch(`${API_URL}/api/send-truck`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ model: m, plate: p, workerId: currentUser }) });
+            closeModal(); refresh();
+        }
+
+        async function acceptWeight() {
+            const w = document.getElementById('net-weight').value;
+            await fetch(`${API_URL}/api/accept-weight`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ weight: w }) });
             refresh();
         }
 
-        function switchTab(id) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.querySelectorAll('#owner-tabs button').forEach(b => b.classList.remove('active-tab'));
-            document.getElementById(id).classList.remove('hidden');
-            document.getElementById('btn-' + id.split('-')[1]).classList.add('active-tab');
+        async function saveSpent() {
+            const f = document.getElementById('w-fuel').value;
+            await fetch(`${API_URL}/api/spend-resources`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ fuel: f, workerId: currentUser }) });
+            document.getElementById('w-fuel').value = ''; alert("Сохранено"); refresh();
         }
 
-        setInterval(refresh, 4000);
-        window.onload = () => { if(currentUser === 'Boss') document.getElementById('owner-tabs').classList.remove('hidden'); switchTab('owner-main'); refresh(); };
+        async function addStock() {
+            const a = document.getElementById('stock-add').value;
+            await fetch(`${API_URL}/api/stock-up`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ amount: a }) });
+            document.getElementById('stock-add').value = ''; refresh();
+        }
+
+        init();
     </script>
 </body>
 </html>
