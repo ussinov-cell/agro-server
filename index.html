@@ -3,357 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AGRO-CONTROL 3.5</title>
+    <title>AGRO-SYSTEM 4.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .hidden { display: none !important; }
-        .active-tab { border-bottom: 4px solid #059669; color: #059669; font-weight: 900; }
-        .alert-anim { animation: slideIn 0.4s ease-out; cursor: pointer; pointer-events: auto; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .active-tab { border-bottom: 4px solid #10b981; color: #10b981; font-weight: 900; }
+        input, select { outline: none; transition: 0.2s; }
+        input:focus { border-color: #10b981; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body class="bg-slate-100 text-slate-900 font-sans">
 
-    <div id="notif-zone" class="fixed top-20 left-4 right-4 z-[300] space-y-2 pointer-events-none"></div>
+    <div id="notif-zone" class="fixed top-4 left-4 right-4 z-[600] space-y-2 pointer-events-none"></div>
 
-    <div id="login-screen" class="flex flex-col items-center justify-center min-h-screen p-6">
-        <div id="auth-box" class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-sm border border-slate-100">
-            <h1 class="text-2xl font-black text-emerald-600 mb-8 uppercase tracking-widest text-center">Agro Login</h1>
-            <input id="login-id" placeholder="Ваш ID" class="w-full p-4 mb-3 bg-slate-50 border rounded-2xl outline-none">
-            <input id="login-pass" type="password" placeholder="Пароль" class="w-full p-4 mb-6 bg-slate-50 border rounded-2xl outline-none">
-            <button onclick="login()" class="w-full bg-emerald-600 text-white font-black p-5 rounded-2xl shadow-lg uppercase mb-4">Войти</button>
-            <button onclick="toggleReg(true)" class="w-full text-slate-400 font-bold text-[10px] uppercase">Регистрация сотрудника</button>
-        </div>
-
-        <div id="reg-box" class="hidden bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-sm border border-slate-100">
-            <h2 class="text-xl font-black mb-6 uppercase text-center text-emerald-600">Новый сотрудник</h2>
-            <input id="r-name" placeholder="ФИО" class="w-full p-4 mb-2 border rounded-xl">
-            <input id="r-phone" placeholder="Телефон" class="w-full p-4 mb-2 border rounded-xl">
-            <input id="r-id" placeholder="ID (например M2)" class="w-full p-4 mb-2 border rounded-xl">
-            <input id="r-pass" type="password" placeholder="Пароль" class="w-full p-4 mb-6 border rounded-xl">
-            <button onclick="registerUser()" class="w-full bg-slate-800 text-white p-5 rounded-2xl font-black uppercase mb-4 text-xs">Создать аккаунт</button>
-            <button onclick="toggleReg(false)" class="w-full text-slate-400 font-bold text-[10px] uppercase">Назад</button>
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-6">
+        <div class="bg-white p-8 rounded-[3rem] shadow-2xl w-full max-w-sm border border-slate-200">
+            <h1 class="text-3xl font-black text-emerald-600 mb-8 text-center tracking-tighter uppercase">AgroControl</h1>
+            <input id="l-id" placeholder="Ваш ID" class="w-full p-5 mb-3 bg-slate-50 border rounded-3xl font-bold">
+            <input id="l-pass" type="password" placeholder="Пароль" class="w-full p-5 mb-8 bg-slate-50 border rounded-3xl font-bold">
+            <button onclick="login()" class="w-full bg-emerald-600 text-white font-black p-5 rounded-3xl shadow-lg uppercase hover:bg-emerald-700">Войти</button>
         </div>
     </div>
 
-    <div id="app-main" class="hidden">
-        <div class="bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-50">
-            <div class="flex flex-col">
-                <span class="font-black text-emerald-600 text-[10px] uppercase tracking-tighter">Agro-System 3.5</span>
-                <span id="user-display" class="text-[9px] font-bold text-slate-400 uppercase"></span>
+    <div id="app" class="hidden pb-24">
+        <header class="bg-white p-5 shadow-sm sticky top-0 z-50 flex justify-between items-center">
+            <div>
+                <p id="user-name" class="font-black text-lg leading-tight uppercase"></p>
+                <p id="user-role" class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"></p>
             </div>
-            <button onclick="logout()" class="text-[9px] font-bold text-red-400 border border-red-50 px-3 py-1.5 rounded-lg">ВЫХОД</button>
-        </div>
+            <button onclick="logout()" class="text-[10px] font-black text-red-400 border border-red-100 px-4 py-2 rounded-xl uppercase">Выход</button>
+        </header>
 
-        <div id="nav-owner" class="hidden grid grid-cols-4 bg-white border-b sticky top-[52px] z-40">
-            <button onclick="showTab('owner-fields', this)" class="p-4 text-[9px] uppercase font-black tab-btn active-tab">Поля</button>
-            <button onclick="showTab('owner-scales', this)" class="p-4 text-[9px] uppercase font-black tab-btn">Весовая</button>
-            <button onclick="showTab('owner-stock', this)" class="p-4 text-[9px] uppercase font-black tab-btn">Склад</button>
-            <button onclick="showTab('owner-reports', this)" class="p-4 text-[9px] uppercase font-black tab-btn">Отчеты</button>
-        </div>
+        <nav id="nav-boss" class="hidden grid grid-cols-4 bg-white border-b text-[10px] font-black uppercase sticky top-[76px] z-40">
+            <button onclick="tab('b-fields', this)" class="p-4 tab-btn active-tab">Поля</button>
+            <button onclick="tab('b-scales', this)" class="p-4 tab-btn">Весы</button>
+            <button onclick="tab('b-stock', this)" class="p-4 tab-btn">Склад</button>
+            <button onclick="tab('b-reports', this)" class="p-4 tab-btn">Отчеты</button>
+        </nav>
 
-        <div id="nav-worker" class="hidden grid grid-cols-3 bg-white border-b sticky top-[52px] z-40">
-            <button onclick="showWorkerTab('worker-jobs', this)" class="p-4 text-[9px] uppercase font-black w-tab-btn active-tab">Задачи</button>
-            <button onclick="showWorkerTab('worker-harvest', this)" class="p-4 text-[9px] uppercase font-black w-tab-btn">Уборка</button>
-            <button onclick="showWorkerTab('worker-stats', this)" class="p-4 text-[9px] uppercase font-black w-tab-btn">Инфо</button>
-        </div>
+        <nav id="nav-worker" class="hidden grid grid-cols-3 bg-white border-b text-[10px] font-black uppercase sticky top-[76px] z-40">
+            <button onclick="tab('w-jobs', this)" class="p-4 tab-btn active-tab">Задачи</button>
+            <button onclick="tab('w-truck', this)" class="p-4 tab-btn">Уборка</button>
+            <button onclick="tab('w-stats', this)" class="p-4 tab-btn">Статистика</button>
+        </nav>
 
-        <div class="p-4 max-w-lg mx-auto">
-            <div id="owner-fields" class="tab-content space-y-4">
-                <button onclick="openFieldModal()" class="w-full bg-emerald-600 text-white p-5 rounded-3xl font-black uppercase text-xs shadow-lg shadow-emerald-100">+ Добавить участок</button>
-                <div id="fields-list" class="space-y-3"></div>
-            </div>
-            
-            <div id="owner-scales" class="tab-content hidden">
-                <div id="scales-ui" class="bg-white p-8 rounded-[2.5rem] shadow-xl text-center"></div>
+        <main class="p-4 max-w-lg mx-auto">
+            <div id="b-fields" class="tab-pane space-y-4">
+                <button onclick="openAddModal()" class="w-full bg-slate-900 text-white p-5 rounded-[2rem] font-black uppercase text-xs">+ Добавить участок</button>
+                <div id="boss-fields-list" class="space-y-3"></div>
             </div>
 
-            <div id="owner-stock" class="tab-content hidden space-y-4">
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm">
-                    <p class="text-[10px] font-black text-slate-300 uppercase mb-2">ГСМ на остатке</p>
-                    <p id="fuel-val" class="text-4xl font-black text-emerald-600">0 л</p>
-                </div>
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm">
-                    <input id="add-fuel-input" type="number" placeholder="Пополнить литры" class="w-full p-4 border rounded-xl mb-4 text-center font-bold">
-                    <button onclick="addStock()" class="w-full bg-slate-800 text-white p-4 rounded-xl font-bold uppercase text-xs">Обновить склад</button>
-                </div>
+            <div id="b-scales" class="tab-pane hidden">
+                <div id="scales-card" class="bg-white p-10 rounded-[3rem] shadow-xl text-center border-4 border-dashed border-slate-100"></div>
             </div>
 
-            <div id="owner-reports" class="tab-content hidden">
-                <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden">
+            <div id="b-reports" class="tab-pane hidden">
+                <div class="bg-white rounded-[2rem] shadow-xl overflow-x-auto">
                     <table class="w-full text-[10px] text-left">
-                        <thead class="bg-slate-50 font-black uppercase text-slate-400">
-                            <tr><th class="p-4">Имя</th><th class="p-4">ГСМ</th><th class="p-4">Вес</th><th class="p-4">Бонус</th></tr>
+                        <thead class="bg-slate-50 uppercase text-slate-400">
+                            <tr><th class="p-3">Дата/Работа</th><th class="p-3">Поле</th><th class="p-3">ГСМ</th><th class="p-3 text-emerald-600">₸/Га</th></tr>
                         </thead>
-                        <tbody id="report-table"></tbody>
+                        <tbody id="full-reports-table"></tbody>
                     </table>
                 </div>
             </div>
 
-            <div id="worker-jobs" class="worker-tab-content space-y-4"></div>
-            <div id="worker-harvest" class="worker-tab-content hidden text-center pt-10">
-                <button onclick="openTruckModal()" class="bg-emerald-600 text-white p-12 rounded-full font-black uppercase shadow-2xl border-8 border-white">🚛 На весовую</button>
-            </div>
-            <div id="worker-stats" class="worker-tab-content hidden space-y-4">
-                <div id="my-stats-ui" class="bg-white p-8 rounded-[2.5rem] shadow-sm"></div>
+            <div id="w-jobs" class="tab-pane space-y-4"></div>
+
+            <div id="w-stats" class="tab-pane hidden space-y-4">
+                <div id="worker-stats-card" class="bg-white p-8 rounded-[2.5rem] shadow-sm"></div>
                 <div class="bg-white p-8 rounded-[2.5rem] shadow-sm">
-                    <p class="text-[10px] font-black text-slate-300 uppercase mb-4 text-center">Списание ГСМ</p>
-                    <input id="w-fuel-val" type="number" placeholder="Литры" class="w-full p-4 border rounded-2xl mb-4 text-center font-black">
-                    <button onclick="saveFuelSpent()" class="w-full bg-emerald-600 text-white p-4 rounded-2xl font-black uppercase text-xs">Сохранить</button>
+                    <p class="text-[10px] font-black text-slate-300 uppercase mb-4">Регистрация в системе</p>
+                    <input id="reg-name" placeholder="ФИО" class="w-full p-4 border rounded-2xl mb-2">
+                    <input id="reg-id" placeholder="ID (М2...)" class="w-full p-4 border rounded-2xl mb-4">
+                    <button onclick="registerNew()" class="w-full bg-slate-800 text-white p-4 rounded-2xl font-black uppercase text-[10px]">Зарегистрировать коллегу</button>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div id="field-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-[400]">
-        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl">
-            <h3 class="text-lg font-black mb-6 uppercase text-emerald-600 text-center">Новый участок</h3>
-            <input id="f-name" placeholder="Название (Участок №...)" class="w-full p-4 border rounded-2xl mb-3 font-bold">
-            <input id="f-addr" placeholder="Адрес / Координаты" class="w-full p-4 border rounded-2xl mb-3 font-bold">
-            <input id="f-area" type="number" placeholder="Количество Га" class="w-full p-4 border rounded-2xl mb-3 font-bold">
+            <div id="w-truck" class="tab-pane hidden text-center py-10">
+                <button onclick="openTruckModal()" class="bg-emerald-600 text-white p-14 rounded-full font-black uppercase shadow-2xl border-[12px] border-white">Отправить<br>зерно</button>
+            </div>
             
-            <p class="text-[10px] font-black text-slate-400 mb-2 ml-1 uppercase">Назначить ответственного:</p>
-            <select id="f-worker" class="w-full p-4 border rounded-2xl mb-8 font-bold bg-slate-50 outline-none">
-                </select>
+            <div id="b-stock" class="tab-pane hidden space-y-4">
+                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm">
+                    <p class="text-[10px] font-black text-slate-300 uppercase">Остаток ГСМ</p>
+                    <p id="fuel-display" class="text-5xl font-black text-emerald-600">0 л</p>
+                </div>
+                <input id="add-fuel" type="number" placeholder="Литры" class="w-full p-5 border rounded-3xl font-bold">
+                <button onclick="addFuel()" class="w-full bg-emerald-600 text-white p-5 rounded-3xl font-black uppercase">Пополнить склад</button>
+            </div>
+        </main>
+    </div>
 
-            <button onclick="createField()" class="w-full bg-emerald-600 text-white p-5 rounded-2xl font-black uppercase shadow-lg">Создать и отправить</button>
-            <button onclick="closeFieldModal()" class="w-full mt-3 text-slate-300 font-bold p-2 text-[10px] uppercase">Отмена</button>
+    <div id="report-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-[1000] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[3rem] p-8">
+            <h3 id="report-title" class="text-xl font-black mb-6 uppercase text-emerald-600">Отчет по работе</h3>
+            <div class="space-y-4">
+                <input id="rep-fuel" type="number" placeholder="Потрачено ГСМ (литры)" class="w-full p-4 bg-slate-50 border rounded-2xl font-bold">
+                <input id="rep-money" type="number" placeholder="Расходы в тенге (итого)" class="w-full p-4 bg-slate-50 border rounded-2xl font-bold">
+                <input id="rep-comment" placeholder="На что потрачено?" class="w-full p-4 bg-slate-50 border rounded-2xl font-bold">
+                <div id="seed-field" class="hidden">
+                    <input id="rep-seeds" type="number" placeholder="Семена (кг)" class="w-full p-4 bg-emerald-50 border border-emerald-100 rounded-2xl font-bold text-emerald-700">
+                </div>
+            </div>
+            <button onclick="confirmFinish()" class="w-full bg-emerald-600 text-white p-5 rounded-3xl font-black uppercase mt-8 shadow-xl">Сохранить отчет</button>
+            <button onclick="closeModals()" class="w-full mt-2 text-slate-400 font-bold p-2 text-[10px] uppercase">Отмена</button>
         </div>
     </div>
 
-    <div id="truck-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-[400]">
-        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8">
-            <input id="t-model" placeholder="Марка машины" class="w-full p-4 bg-slate-50 border rounded-2xl mb-3 font-bold">
-            <input id="t-plate" placeholder="ГОС. НОМЕР" class="w-full p-4 bg-slate-50 border rounded-2xl mb-6 text-center font-black text-xl uppercase">
-            <button onclick="sendTruck()" class="w-full bg-emerald-600 text-white p-5 rounded-2xl font-black uppercase">ОТПРАВИТЬ</button>
-            <button onclick="closeModal()" class="w-full mt-3 text-slate-300 font-bold p-2 text-[10px] uppercase tracking-tighter">Закрыть</button>
+    <div id="field-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-[1000] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[3rem] p-8">
+            <h3 class="text-xl font-black mb-6 uppercase">Новое поле</h3>
+            <input id="f-name" placeholder="Название участка" class="w-full p-4 mb-2 border rounded-2xl">
+            <input id="f-addr" placeholder="Адрес" class="w-full p-4 mb-2 border rounded-2xl">
+            <input id="f-area" type="number" placeholder="Га" class="w-full p-4 mb-4 border rounded-2xl font-bold">
+            <select id="f-worker" class="w-full p-4 mb-8 bg-slate-50 border rounded-2xl font-bold"></select>
+            <button onclick="saveField()" class="w-full bg-emerald-600 text-white p-5 rounded-3xl font-black uppercase">Создать</button>
+            <button onclick="closeModals()" class="w-full mt-2 text-slate-400 font-bold p-2 text-[10px] uppercase">Закрыть</button>
+        </div>
+    </div>
+
+    <div id="truck-modal" class="hidden fixed inset-0 bg-black/70 z-[1000] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[3rem] p-8">
+            <input id="t-model" placeholder="Машина (КАМАЗ...)" class="w-full p-4 mb-2 border rounded-2xl uppercase font-bold">
+            <input id="t-plate" placeholder="ГОС НОМЕР" class="w-full p-4 mb-6 border rounded-2xl text-center text-2xl font-black uppercase">
+            <button onclick="sendTruck()" class="w-full bg-emerald-600 text-white p-5 rounded-3xl font-black uppercase">Отправить</button>
         </div>
     </div>
 
     <script>
-        const API_URL = 'https://agro-server-nuwi.onrender.com';
-        let currentUser = localStorage.getItem('agro_user') || '';
+        const API = 'https://agro-server-nuwi.onrender.com'; // ЗАМЕНИ НА СВОЙ
+        let user = null;
         let lastState = null;
-
-        function toggleReg(s) {
-            document.getElementById('auth-box').classList.toggle('hidden', s);
-            document.getElementById('reg-box').classList.toggle('hidden', !s);
-        }
+        let currentJob = null;
 
         async function login() {
-            const id = document.getElementById('login-id').value;
-            const pass = document.getElementById('login-pass').value;
-            const res = await fetch(`${API_URL}/api/state`);
+            const id = document.getElementById('l-id').value;
+            const pass = document.getElementById('l-pass').value;
+            const res = await fetch(`${API}/api/state`);
             const data = await res.json();
-            const user = data.users.find(u => u.id === id && u.pass === pass);
-            if (user) {
-                currentUser = id;
-                localStorage.setItem('agro_user', id);
-                location.reload();
-            } else alert("Ошибка!");
+            const found = data.users.find(u => u.id === id && u.pass === pass);
+            if (found) {
+                user = found;
+                localStorage.setItem('agro_u', JSON.stringify(found));
+                initApp();
+            } else alert("Ошибка входа!");
         }
 
-        function logout() { localStorage.removeItem('agro_user'); location.reload(); }
+        function logout() { localStorage.removeItem('agro_u'); location.reload(); }
 
-        async function registerUser() {
-            const p = {
-                id: document.getElementById('r-id').value,
-                pass: document.getElementById('r-pass').value,
-                name: document.getElementById('r-name').value,
-                phone: document.getElementById('r-phone').value,
-                role: 'worker'
-            };
-            const res = await fetch(`${API_URL}/api/register`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(p)
-            });
-            if(res.ok) { alert("Готово! Войдите под своим ID."); toggleReg(false); }
-        }
+        function initApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            document.getElementById('user-name').innerText = user.name;
+            document.getElementById('user-role').innerText = user.role === 'owner' ? 'Глава хозяйства' : 'Администратор участка';
+            
+            if(user.role === 'owner') document.getElementById('nav-boss').classList.remove('hidden');
+            else document.getElementById('nav-worker').classList.remove('hidden');
 
-        // РАБОТА С УЧАСТКАМИ (ДЛЯ BOSS)
-        async function openFieldModal() {
-            document.getElementById('field-modal').classList.remove('hidden');
-            const res = await fetch(`${API_URL}/api/workers`);
-            const workers = await res.json();
-            const select = document.getElementById('f-worker');
-            select.innerHTML = workers.map(w => `<option value="${w.id}">${w.name} (${w.id})</option>`).join('');
-        }
-
-        function closeFieldModal() { document.getElementById('field-modal').classList.add('hidden'); }
-
-        async function createField() {
-            const payload = {
-                fieldId: Date.now(),
-                name: document.getElementById('f-name').value,
-                address: document.getElementById('f-addr').value,
-                area: document.getElementById('f-area').value,
-                workerId: document.getElementById('f-worker').value
-            };
-            await fetch(`${API_URL}/api/assign-field`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            closeFieldModal();
             refresh();
+            setInterval(refresh, 5000);
         }
 
-        async function deleteField(id) {
-            if(!confirm("Удалить участок?")) return;
-            await fetch(`${API_URL}/api/delete-field`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ fieldId: id })
-            });
-            refresh();
-        }
-
-        // ОБНОВЛЕНИЕ ДАННЫХ
         async function refresh() {
-            try {
-                const res = await fetch(`${API_URL}/api/state`);
-                const data = await res.json();
-                const user = data.users.find(u => u.id === currentUser);
-                if(!user) return;
+            const res = await fetch(`${API}/api/state`);
+            const data = await res.json();
+            
+            if (user.role === 'owner') renderBoss(data);
+            else renderWorker(data);
 
-                document.getElementById('user-display').innerText = user.name;
-
-                if (user.role === 'owner') {
-                    document.getElementById('nav-owner').classList.remove('hidden');
-                    updateBossUI(data);
-                } else {
-                    document.getElementById('nav-worker').classList.remove('hidden');
-                    updateWorkerUI(data);
-                }
-
-                checkNotes(data);
-                lastState = data;
-            } catch(e) {}
+            checkNotifs(data);
+            lastState = data;
         }
 
-        function updateBossUI(data) {
+        function renderBoss(data) {
+            document.getElementById('fuel-display').innerText = data.fuel + ' л';
+            
             // Список полей
-            document.getElementById('fields-list').innerHTML = data.fields.map(f => `
-                <div class="bg-white p-5 rounded-[2rem] shadow-sm border-l-8 ${f.stage==='Завершено'?'border-emerald-500':'border-orange-400'}">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <p class="text-[8px] font-black text-slate-300 uppercase">${f.address} | ${f.area} га</p>
-                            <h3 class="font-black text-lg">${f.name}</h3>
-                            <p class="text-[9px] font-bold text-emerald-600 uppercase">Сотрудник: ${data.workers[f.assignedTo]?.name || f.assignedTo}</p>
+            document.getElementById('boss-fields-list').innerHTML = data.fields.map(f => `
+                <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-l-[12px] ${f.stage==='Завершено'?'border-emerald-500':'border-orange-400'}">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-[9px] font-black text-slate-300 uppercase">${f.address} | ${f.area} Га</p>
+                            <h3 class="font-black text-xl">${f.name}</h3>
+                            <p class="text-[10px] font-bold text-emerald-600 uppercase">Ответственный: ${data.workers[f.assignedTo]?.name || f.assignedTo}</p>
                         </div>
-                        <div class="flex flex-col items-end gap-2">
-                            <span class="px-2 py-1 rounded-full text-[8px] font-black uppercase ${f.stage==='Завершено'?'bg-emerald-50 text-emerald-600':'bg-orange-50 text-orange-600'}">${f.stage}</span>
-                            <button onclick="deleteField(${f.id})" class="text-[8px] text-red-300 uppercase font-bold">Удалить</button>
-                        </div>
+                        <span class="bg-slate-50 px-3 py-1 rounded-full text-[10px] font-black uppercase">${f.stage}</span>
                     </div>
                 </div>
             `).join('');
 
-            // Весовая
-            const sc = document.getElementById('scales-ui');
-            if(data.truckInWay) {
+            // Весы
+            const sc = document.getElementById('scales-card');
+            if (data.truckInWay) {
                 sc.innerHTML = `
-                    <h2 class="text-2xl font-black mb-1">${data.truckInWay.model}</h2>
-                    <p class="text-slate-400 font-bold mb-6">${data.truckInWay.plate}</p>
-                    <input id="net-val" type="number" placeholder="КГ" class="w-full p-5 bg-slate-50 border-2 border-emerald-100 rounded-3xl text-center font-black text-3xl mb-4 outline-none">
-                    <button onclick="saveWeight()" class="w-full bg-emerald-600 text-white p-5 rounded-3xl font-black uppercase shadow-lg">Принять</button>
+                    <p class="text-[10px] font-black text-emerald-600 uppercase mb-2">Ожидает взвешивания</p>
+                    <h2 class="text-3xl font-black mb-1">${data.truckInWay.model}</h2>
+                    <p class="text-slate-400 font-bold mb-8 uppercase">${data.truckInWay.plate}</p>
+                    <input id="netto" type="number" placeholder="ЧИСТЫЙ ВЕС (КГ)" class="w-full p-6 bg-slate-50 rounded-3xl text-center text-3xl font-black mb-4 border-2 border-emerald-100">
+                    <button onclick="acceptWeight()" class="w-full bg-emerald-600 text-white p-5 rounded-3xl font-black uppercase shadow-lg">Принять вес</button>
                 `;
-            } else sc.innerHTML = `<p class="py-10 text-slate-200 font-black uppercase italic text-xs">Нет машин</p>`;
+            } else sc.innerHTML = `<p class="py-6 text-slate-300 font-black uppercase italic text-xs">Машин в пути нет</p>`;
 
-            document.getElementById('fuel-val').innerText = data.fuel.toLocaleString() + ' л';
-            document.getElementById('report-table').innerHTML = Object.entries(data.workers).map(([id, w]) => `
-                <tr class="border-b"><td class="p-4 font-bold">${w.name}</td><td class="p-4 text-red-500">-${w.fuelSpent}</td><td class="p-4 text-blue-500">${w.totalBrought}</td><td class="p-4 font-black text-emerald-600">${w.bonus} ₸</td></tr>
+            // Отчеты
+            document.getElementById('full-reports-table').innerHTML = data.reports.map(r => `
+                <tr class="border-b">
+                    <td class="p-3"><b>${r.work}</b><br><span class="text-slate-400">${r.date}</span></td>
+                    <td class="p-3">${r.field}</td>
+                    <td class="p-3 text-red-400">-${r.fuel}л</td>
+                    <td class="p-3 text-right font-black text-emerald-600">${r.perHa} ₸</td>
+                </tr>
             `).join('');
         }
 
-        function updateWorkerUI(data) {
-            const myFields = data.fields.filter(f => f.assignedTo === currentUser);
-            document.getElementById('worker-jobs').innerHTML = myFields.map(f => `
-                <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border-l-8 border-orange-400">
-                    <h3 class="font-black text-lg mb-1">${f.name}</h3>
-                    <p class="text-[9px] font-bold text-slate-400 uppercase mb-4">${f.address} | ${f.area} га</p>
-                    ${f.stage === 'Ожидание' ? `<button onclick="updateF(${f.id}, 'Пахота')" class="w-full bg-orange-400 text-white p-4 rounded-2xl font-black uppercase text-[10px]">Принять задачу</button>` :
-                      f.stage === 'Пахота' ? `<button onclick="updateF(${f.id}, 'Завершено')" class="w-full bg-slate-800 text-white p-4 rounded-2xl font-black uppercase text-[10px]">Завершить пахоту</button>` :
-                      `<div class="text-center p-3 bg-emerald-50 text-emerald-600 font-black text-[10px] rounded-xl uppercase">Выполнено</div>`}
+        function renderWorker(data) {
+            const myFields = data.fields.filter(f => f.assignedTo === user.id);
+            document.getElementById('w-jobs').innerHTML = myFields.map(f => `
+                <div class="bg-white p-8 rounded-[3rem] shadow-sm border-l-[16px] border-orange-400">
+                    <h3 class="font-black text-2xl mb-1">${f.name}</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-6">${f.address} | ${f.area} Га</p>
+                    <div class="space-y-2">
+                        ${getButtonForStage(f)}
+                    </div>
                 </div>
             `).join('');
 
-            const s = data.workers[currentUser];
-            document.getElementById('my-stats-ui').innerHTML = `
-                <div class="flex justify-between items-center mb-4"><span class="text-[9px] font-black text-slate-300 uppercase">Мой бонус</span><span class="text-2xl font-black text-emerald-600">${s.bonus} ₸</span></div>
-                <div class="flex justify-between items-center"><span class="text-[9px] font-black text-slate-300 uppercase">ГСМ</span><span class="font-bold text-red-400">-${s.fuelSpent} л</span></div>
-                <div class="flex justify-between items-center"><span class="text-[9px] font-black text-slate-300 uppercase">Вес</span><span class="font-bold text-blue-400">${s.totalBrought} кг</span></div>
+            const s = data.workers[user.id];
+            document.getElementById('worker-stats-card').innerHTML = `
+                <div class="flex justify-between items-center mb-4"><span class="text-[10px] font-black text-slate-300 uppercase">Премия</span><span class="text-3xl font-black text-emerald-600">${s.bonus} ₸</span></div>
+                <div class="flex justify-between items-center"><span class="text-[10px] font-black text-slate-300 uppercase">ГСМ расход</span><span class="font-bold text-red-400">-${s.fuelSpent} л</span></div>
+                <div class="flex justify-between items-center"><span class="text-[10px] font-black text-slate-300 uppercase">Зерно</span><span class="font-bold text-blue-500">${s.totalBrought} кг</span></div>
             `;
         }
 
-        // Кнопки действий
-        async function updateF(id, s) { await fetch(`${API_URL}/api/field-status`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({fieldId:id, newStage:s})}); refresh(); }
-        async function saveWeight() {
-            const w = document.getElementById('net-val').value;
-            await fetch(`${API_URL}/api/accept-weight`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({weight:w})});
+        function getButtonForStage(f) {
+            if (f.stage === 'Ожидание') return `<button onclick="setFieldStatus(${f.id}, 'Пахота')" class="w-full bg-orange-400 text-white p-5 rounded-2xl font-black uppercase text-xs">Начать пахоту</button>`;
+            if (f.stage === 'Пахота') return `<button onclick="openReport(${f.id}, 'Пахота', 'Боронование')" class="w-full bg-slate-800 text-white p-5 rounded-2xl font-black uppercase text-xs">Завершить пахоту</button>`;
+            if (f.stage === 'Боронование') return `<button onclick="openReport(${f.id}, 'Боронование', 'Посев')" class="w-full bg-slate-800 text-white p-5 rounded-2xl font-black uppercase text-xs">Завершить бороны</button>`;
+            if (f.stage === 'Посев') return `<button onclick="openReport(${f.id}, 'Посев', 'Завершено')" class="w-full bg-emerald-600 text-white p-5 rounded-2xl font-black uppercase text-xs">Завершить посев</button>`;
+            return `<div class="bg-emerald-50 text-emerald-600 p-4 rounded-2xl text-center font-black uppercase text-[10px]">Все работы выполнены</div>`;
+        }
+
+        // МОДАЛКИ И ОТЧЕТЫ
+        function openReport(fieldId, stage, next) {
+            currentJob = { fieldId, stage, next };
+            document.getElementById('report-title').innerText = stage.toUpperCase();
+            document.getElementById('seed-field').classList.toggle('hidden', stage !== 'Посев');
+            document.getElementById('report-modal').classList.remove('hidden');
+        }
+
+        async function confirmFinish() {
+            const p = {
+                ...currentJob,
+                stageName: currentJob.stage,
+                nextStage: currentJob.next,
+                fuel: document.getElementById('rep-fuel').value,
+                money: document.getElementById('rep-money').value,
+                comment: document.getElementById('rep-comment').value,
+                seeds: document.getElementById('rep-seeds').value
+            };
+            await fetch(`${API}/api/finish-stage`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) });
+            closeModals(); refresh();
+        }
+
+        async function setFieldStatus(fieldId, newStage) {
+            await fetch(`${API}/api/field-status`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({fieldId, newStage}) });
             refresh();
         }
-        async function addStock() {
-            const a = document.getElementById('add-fuel-input').value;
-            await fetch(`${API_URL}/api/stock-up`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:a})});
-            document.getElementById('add-fuel-input').value = ''; refresh();
+
+        async function acceptWeight() {
+            const w = document.getElementById('netto').value;
+            await fetch(`${API}/api/accept-weight`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({weight:w}) });
+            refresh();
         }
-        async function saveFuelSpent() {
-            const f = document.getElementById('w-fuel-val').value;
-            await fetch(`${API_URL}/api/spend-resources`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({fuel:f, workerId:currentUser})});
-            document.getElementById('w-fuel-val').value = ''; alert("Сохранено!"); refresh();
+
+        async function addFuel() {
+            const a = document.getElementById('add-fuel').value;
+            await fetch(`${API}/api/stock-up`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({amount:a}) });
+            document.getElementById('add-fuel').value = ''; refresh();
         }
+
         async function sendTruck() {
-            const m = document.getElementById('t-model').value;
-            const p = document.getElementById('t-plate').value;
-            await fetch(`${API_URL}/api/send-truck`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({model:m, plate:p, workerId:currentUser})});
-            closeModal(); refresh();
+            const p = { model: document.getElementById('t-model').value, plate: document.getElementById('t-plate').value, workerId: user.id };
+            await fetch(`${API}/api/send-truck`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) });
+            closeModals(); refresh();
         }
 
-        function checkNotes(data) {
-            if(!lastState) return;
-            if(currentUser === 'Boss') {
-                if(data.truckInWay && (!lastState.truckInWay || lastState.truckInWay.time !== data.truckInWay.time)) {
-                    createNote(`🚛 МАШИНА В ПУТИ: ${data.truckInWay.model}`, () => showTab('owner-scales', document.querySelector('[onclick*="scales"]')));
-                }
-            } else {
-                const job = data.fields.find(f => f.assignedTo === currentUser && f.stage === 'Ожидание');
-                if(job && !lastState.fields.find(lf => lf.id === job.id && lf.stage === 'Ожидание')) {
-                    createNote(`🆕 НОВАЯ ЗАДАЧА: ${job.name}`, () => showWorkerTab('worker-jobs', document.querySelector('[onclick*="jobs"]')), 'bg-orange-500');
-                }
-            }
+        async function openAddModal() {
+            document.getElementById('field-modal').classList.remove('hidden');
+            const res = await fetch(`${API}/api/state`);
+            const data = await res.json();
+            const workers = data.users.filter(u => u.role === 'worker');
+            document.getElementById('f-worker').innerHTML = workers.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
         }
 
-        function createNote(t, a, c='bg-blue-600') {
-            const z = document.getElementById('notif-zone');
-            const d = document.createElement('div');
-            d.className = `${c} text-white p-4 rounded-2xl shadow-xl alert-anim pointer-events-auto flex justify-between items-center`;
-            d.innerHTML = `<span class="text-[10px] font-black uppercase leading-tight">${t}</span>`;
-            d.onclick = () => { if(a) a(); d.remove(); };
-            z.appendChild(d);
-            setTimeout(() => d.remove(), 10000);
+        async function saveField() {
+            const p = { fieldId: Date.now(), name: document.getElementById('f-name').value, address: document.getElementById('f-addr').value, area: document.getElementById('f-area').value, workerId: document.getElementById('f-worker').value };
+            await fetch(`${API}/api/assign-field`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(p) });
+            closeModals(); refresh();
         }
 
-        function showTab(id, btn) {
-            document.querySelectorAll('.tab-content').forEach(e => e.classList.add('hidden'));
+        function closeModals() { 
+            document.querySelectorAll('#report-modal, #field-modal, #truck-modal').forEach(m => m.classList.add('hidden')); 
+        }
+
+        function tab(id, btn) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
             btn.classList.add('active-tab');
         }
 
-        function showWorkerTab(id, btn) {
-            document.querySelectorAll('.worker-tab-content').forEach(e => e.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-            document.querySelectorAll('.w-tab-btn').forEach(b => b.classList.remove('active-tab'));
-            btn.classList.add('active-tab');
+        function checkNotifs(data) {
+            if (!lastState) return;
+            if (user.role === 'owner' && data.truckInWay && !lastState.truckInWay) {
+                notify("🚛 МАШИНА В ПУТИ!", "bg-emerald-600");
+            }
+        }
+
+        function notify(t, c) {
+            const d = document.createElement('div');
+            d.className = `${c} text-white p-4 rounded-2xl shadow-xl font-black text-center uppercase text-xs`;
+            d.innerText = t;
+            document.getElementById('notif-zone').appendChild(d);
+            setTimeout(() => d.remove(), 5000);
         }
 
         function openTruckModal() { document.getElementById('truck-modal').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('truck-modal').classList.add('hidden'); }
 
-        init();
-        refresh();
+        // ЗАПУСК
+        const saved = localStorage.getItem('agro_u');
+        if(saved) { user = JSON.parse(saved); initApp(); }
     </script>
 </body>
 </html>
