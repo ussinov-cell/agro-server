@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AGRO-CONTROL v6.0</title>
+    <title>AGRO-CONTROL v7.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,41 +13,37 @@
 
     <div id="auth-screen" class="min-h-screen flex items-center justify-center p-6">
         <div class="bg-white p-8 rounded-[3rem] shadow-2xl w-full max-w-sm border border-slate-100">
-            
             <div id="login-form">
                 <h1 class="text-3xl font-black text-emerald-600 mb-8 text-center uppercase tracking-tighter">Вход</h1>
                 <input id="l-id" placeholder="ID (Логин)" class="input-field mb-3">
                 <input id="l-pass" type="password" placeholder="Пароль" class="input-field mb-6">
                 <button onclick="login()" class="btn-primary mb-4">Войти</button>
-                <button onclick="toggleAuth(false)" class="btn-link">Нет аккаунта? Регистрация</button>
+                <button onclick="toggleAuth(false)" class="btn-link">Регистрация</button>
             </div>
 
             <div id="reg-form" class="hidden">
                 <h1 class="text-3xl font-black text-blue-600 mb-6 text-center uppercase tracking-tighter">Регистрация</h1>
                 <div class="space-y-3 mb-6">
                     <input id="r-name" placeholder="ФИО" class="input-field">
-                    <input id="r-phone" type="tel" placeholder="Номер телефона" class="input-field">
+                    <input id="r-phone" type="tel" placeholder="Телефон" class="input-field">
                     <select id="r-role" class="select-field">
-                        <option value="worker">Я — Админ участка</option>
-                        <option value="owner">Я — Владелец (Boss)</option>
+                        <option value="worker">Админ участка</option>
+                        <option value="owner">Владелец (Boss)</option>
                     </select>
                     <div class="grid grid-cols-2 gap-2">
-                        <input id="r-id" placeholder="Логин (ID)" class="input-field">
+                        <input id="r-id" placeholder="ID" class="input-field">
                         <input id="r-pass" type="password" placeholder="Пароль" class="input-field">
                     </div>
                 </div>
-                <button onclick="register()" class="btn-secondary mb-4">Создать аккаунт</button>
-                <button onclick="toggleAuth(true)" class="btn-link">Назад ко входу</button>
+                <button onclick="register()" class="btn-secondary mb-4">Создать</button>
+                <button onclick="toggleAuth(true)" class="btn-link">Назад</button>
             </div>
         </div>
     </div>
 
     <div id="app" class="hidden pb-20">
         <header class="bg-white p-5 shadow-sm flex justify-between items-center sticky top-0 z-50">
-            <div>
-                <p id="u-name" class="font-black text-lg uppercase"></p>
-                <p id="u-role" class="role-badge"></p>
-            </div>
+            <div><p id="u-name" class="font-black text-lg uppercase"></p><p id="u-role" class="role-badge"></p></div>
             <button onclick="logout()" class="btn-logout">ВЫХОД</button>
         </header>
 
@@ -66,7 +62,7 @@
 
         <main class="p-4 max-w-lg mx-auto">
             <div id="b-fields" class="tab-pane space-y-4">
-                <button onclick="openFieldModal()" class="btn-dark">+ Добавить участок</button>
+                <button id="add-field-btn" onclick="openFieldModal()" class="btn-dark hidden">+ Добавить участок</button>
                 <div id="boss-list" class="space-y-3"></div>
             </div>
 
@@ -74,7 +70,7 @@
                 <div class="bg-white rounded-3xl shadow-sm overflow-hidden text-[10px]">
                     <table class="w-full text-left">
                         <thead class="bg-slate-50 font-black uppercase">
-                            <tr><th class="p-3">Работа</th><th class="p-3">Техника</th><th class="p-3">Итого</th><th class="p-3 text-emerald-600">₸/Га</th></tr>
+                            <tr><th class="p-3">Кто/Где</th><th class="p-3">Работа</th><th class="p-3">Техника</th><th class="p-3">₸/Га</th></tr>
                         </thead>
                         <tbody id="reports-body"></tbody>
                     </table>
@@ -82,40 +78,40 @@
             </div>
 
             <div id="w-jobs" class="tab-pane space-y-4"></div>
-
-            <div id="b-scales" class="tab-pane hidden">
-                <div id="scales-ui" class="scales-container"></div>
-            </div>
+            <div id="b-scales" class="tab-pane hidden"><div id="scales-ui" class="scales-container"></div></div>
 
             <div id="b-stock" class="tab-pane hidden space-y-4">
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-sm">
-                    <p class="text-[10px] font-black text-slate-300 uppercase">Склад ГСМ</p>
-                    <p id="fuel-val" class="text-5xl font-black text-emerald-600">0 л</p>
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm">
+                    <h4 class="font-black uppercase text-[10px] mb-4 text-slate-400">Склад (Остатки)</h4>
+                    <div id="stock-display" class="grid grid-cols-2 gap-4 text-[11px] font-bold"></div>
                 </div>
-                <input id="f-add" type="number" placeholder="Литры" class="input-field">
-                <button onclick="addFuel()" class="btn-primary">Обновить</button>
+                <div class="bg-white p-6 rounded-[2rem] shadow-sm space-y-3">
+                    <h4 class="font-black uppercase text-[10px] text-emerald-600 tracking-widest">Приход товара</h4>
+                    <select id="st-cat" class="select-field" onchange="updateStockItems()">
+                        <option value="fuel">ГСМ (л)</option>
+                        <option value="seeds">Семена (кг)</option>
+                        <option value="fertilizers">Удобрения (кг)</option>
+                        <option value="glyphosate">Глифосат (л)</option>
+                    </select>
+                    <select id="st-item" class="select-field hidden"></select>
+                    <input id="st-amount" type="number" placeholder="Количество" class="input-field">
+                    <button onclick="addStock()" class="btn-primary">Принять</button>
+                </div>
             </div>
 
-            <div id="w-stats" class="tab-pane hidden space-y-4">
-                <div id="worker-stats-card" class="bg-white p-8 rounded-[2.5rem] shadow-sm"></div>
-            </div>
-
-            <div id="w-truck" class="tab-pane hidden text-center py-12">
-                <button onclick="openTruckModal()" class="btn-round">На весы</button>
-            </div>
+            <div id="w-stats" class="tab-pane hidden space-y-4"><div id="worker-stats-card" class="bg-white p-8 rounded-[2.5rem] shadow-sm"></div></div>
+            <div id="w-truck" class="tab-pane hidden text-center py-12"><button onclick="openTruckModal()" class="btn-round">На весы</button></div>
         </main>
     </div>
 
     <div id="finish-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <h3 id="finish-title" class="text-xl font-black mb-6 uppercase text-emerald-600 text-center">Отчет</h3>
+            <h3 id="finish-title" class="text-xl font-black mb-6 uppercase text-emerald-600 text-center">Завершить этап</h3>
             <div class="space-y-3">
                 <input id="in-fuel" type="number" placeholder="ГСМ (л)" class="input-field">
-                <input id="in-tech" type="number" placeholder="Затраты на технику (₸)" class="input-field text-blue-600">
+                <input id="in-tech" type="number" placeholder="Техника (₸)" class="input-field text-blue-600">
                 <input id="in-money" type="number" placeholder="Прочее (₸)" class="input-field">
-                <div id="seed-box" class="hidden">
-                    <input id="in-seeds" type="number" placeholder="Семена (кг)" class="input-field border-emerald-200 bg-emerald-50">
-                </div>
+                <div id="seed-box" class="hidden"><input id="in-seeds" type="number" placeholder="Семена (кг)" class="input-field bg-emerald-50"></div>
                 <input id="in-comment" placeholder="Комментарий" class="input-field">
             </div>
             <button onclick="submitFinish()" class="btn-primary mt-8">Сохранить</button>
@@ -125,8 +121,8 @@
 
     <div id="field-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <h3 class="text-xl font-black mb-6 uppercase text-center">Новое поле</h3>
-            <input id="fn-name" placeholder="Название участка" class="input-field mb-2">
+            <h3 class="text-xl font-black mb-6 uppercase text-center">Новый участок</h3>
+            <input id="fn-name" placeholder="Название (Поле №...)" class="input-field mb-2">
             <input id="fn-area" type="number" placeholder="Площадь (Га)" class="input-field mb-2">
             <select id="fn-worker" class="select-field mb-8"></select>
             <button onclick="saveField()" class="btn-primary">Создать</button>
@@ -136,10 +132,10 @@
 
     <div id="truck-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <h3 class="text-xl font-black mb-6 uppercase text-center">Транспорт</h3>
-            <input id="t-model" placeholder="КАМАЗ" class="input-field mb-2 uppercase">
-            <input id="t-plate" placeholder="ГОС НОМЕР" class="input-field mb-6 text-center text-2xl font-black">
-            <button onclick="sendTruck()" class="btn-primary">Отправить</button>
+            <h3 class="text-xl font-black mb-6 uppercase text-center">Отправка</h3>
+            <input id="t-model" placeholder="Марка авто" class="input-field mb-2 uppercase">
+            <input id="t-plate" placeholder="ГОС НОМЕР" class="input-field mb-6 text-center text-2xl font-black uppercase">
+            <button onclick="sendTruck()" class="btn-primary">В ПУТЬ</button>
             <button onclick="closeModals()" class="btn-cancel">Отмена</button>
         </div>
     </div>
