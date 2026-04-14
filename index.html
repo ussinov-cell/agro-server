@@ -1,208 +1,79 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>АГРО-КОНТРОЛЬ</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .hidden { display: none; }
-        .card-shadow { box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
-        .btn-gradient { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
-        input::placeholder { color: #94a3b8; }
-    </style>
-</head>
-<body class="bg-[#F8FAFC] text-[#1E293B] min-h-screen font-sans">
+<body class="bg-[#F8FAFC]">
 
-    <script>
-        const API_URL = 'https://agro-server-nuwi.onrender.com'; 
-    </script>
+    <div id="header" class="hidden bg-white p-4 shadow-sm flex justify-between items-center mb-4">
+        <span class="font-black text-emerald-600 uppercase tracking-tighter">Агро-Контроль</span>
+        <button onclick="logout()" class="text-xs font-bold text-red-500 border border-red-200 px-3 py-1 rounded-lg">ВЫЙТИ</button>
+    </div>
 
     <div id="login-screen" class="flex items-center justify-center min-h-screen p-6">
-        <div class="bg-white p-8 rounded-[2.5rem] card-shadow w-full max-w-[420px] text-center border border-gray-100">
-            <h1 class="text-[#059669] text-2xl font-black tracking-[0.2em] mb-10 uppercase">АГРО-КОНТРОЛЬ</h1>
-            <div class="space-y-4 mb-8">
-                <input id="login-user" type="text" placeholder="Логин (например, Boss или М1)" class="w-full p-5 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-lg">
-                <input type="password" placeholder="Пароль" class="w-full p-5 bg-gray-50 border border-gray-200 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-lg">
-            </div>
-            <button onclick="login()" class="w-full btn-gradient text-white font-bold p-5 rounded-2xl tracking-widest uppercase shadow-xl shadow-emerald-200 active:scale-95 transition-transform">Войти в систему</button>
-            <p class="mt-8 text-xs text-gray-400 font-medium">Введите "Boss" для владельца или "М1" для админа</p>
+        <div class="bg-white p-8 rounded-[2.5rem] card-shadow w-full max-w-[400px]">
+            <h1 class="text-center font-black mb-8">ВХОД В СИСТЕМУ</h1>
+            <input id="login-id" type="text" placeholder="Логин (Boss или M1)" class="w-full p-4 mb-4 bg-gray-50 rounded-2xl border">
+            <input id="login-pass" type="password" placeholder="Пароль" class="w-full p-4 mb-8 bg-gray-50 rounded-2xl border">
+            <button onclick="login()" class="w-full bg-emerald-600 text-white p-4 rounded-2xl font-bold uppercase">Войти</button>
         </div>
     </div>
 
-    <div id="owner-screen" class="hidden max-w-lg mx-auto p-4 pt-10">
-        <div class="bg-white rounded-[2.5rem] card-shadow overflow-hidden border-t-[8px] border-purple-600 mb-8">
-            <div class="p-8">
-                <h2 class="font-black flex items-center gap-3 mb-8 uppercase tracking-widest text-xs text-gray-500">
-                    <span class="text-xl">📊</span> Панель управления
-                </h2>
-                <div class="grid grid-cols-2 gap-4 mb-8">
-                    <div class="bg-slate-50 p-5 rounded-[2rem] border border-gray-100">
-                        <p class="text-[10px] text-gray-400 font-black uppercase mb-2 tracking-wider">Склад ГСМ</p>
-                        <p id="owner-fuel" class="text-2xl font-black text-emerald-600 tracking-tighter">... л</p>
-                    </div>
-                    <div class="bg-slate-50 p-5 rounded-[2rem] border border-gray-100">
-                        <p class="text-[10px] text-gray-400 font-black uppercase mb-2 tracking-wider">Урожай (Всего)</p>
-                        <p id="owner-weight" class="text-2xl font-black text-blue-600 tracking-tighter">... кг</p>
-                    </div>
-                </div>
-                <button onclick="startCycle()" class="w-full bg-purple-600 text-white p-5 rounded-2xl font-black uppercase text-sm tracking-[0.2em] hover:bg-purple-700 shadow-lg shadow-purple-100 transition-all active:scale-95">Запустить техкарту</button>
+    <div id="owner-screen" class="hidden p-4 max-w-lg mx-auto">
+        <div class="bg-white p-6 rounded-[2rem] card-shadow mb-6">
+            <h3 class="font-bold text-xs uppercase mb-4 text-gray-400">🆕 Добавить участок</h3>
+            <div class="space-y-3">
+                <input id="new-field-name" placeholder="Название (Участок №1)" class="w-full p-3 bg-gray-50 rounded-xl border">
+                <input id="new-field-culture" placeholder="Культура (Свекла)" class="w-full p-3 bg-gray-50 rounded-xl border">
+                <select id="new-field-worker" class="w-full p-3 bg-gray-50 rounded-xl border">
+                    <option value="M1">Алексей (M1)</option>
+                    <option value="M2">Иван (M2)</option>
+                </select>
+                <button onclick="addField()" class="w-full bg-purple-600 text-white p-3 rounded-xl font-bold uppercase text-xs">Закрепить исполнителя</button>
             </div>
         </div>
 
-        <div id="weighing-card" class="hidden bg-white rounded-[2.5rem] card-shadow border-2 border-blue-500 p-8 mb-8 animate-pulse">
-            <p class="text-blue-600 font-black text-xs uppercase mb-6 tracking-widest flex items-center gap-2">
-                <span>🚛</span> Машина на весовой!
-            </p>
-            <input id="net-weight" type="number" placeholder="Введите чистый вес в кг" class="w-full p-5 bg-blue-50 border border-blue-100 rounded-2xl mb-5 outline-none text-lg font-bold">
-            <button onclick="acceptWeight()" class="w-full bg-blue-600 text-white p-5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg shadow-blue-100">Принять вес и начислить KPI</button>
-        </div>
-
-        <div class="bg-white rounded-[2.5rem] card-shadow p-8 mb-10">
-            <h2 class="font-black flex items-center gap-3 mb-6 uppercase tracking-widest text-xs text-gray-500">
-                <span>🥇</span> Рейтинг и премии
-            </h2>
-            <div id="kpi-table" class="space-y-4">
-                </div>
-        </div>
-    </div>
-
-    <div id="worker-screen" class="hidden max-w-lg mx-auto p-4 pt-10">
-        <div class="bg-white rounded-[2.5rem] card-shadow overflow-hidden border-t-[8px] border-emerald-500 mb-8 p-8">
-            <h2 class="font-black flex items-center gap-3 mb-8 uppercase tracking-widest text-xs text-gray-500">
-                <span>🚜</span> Сотрудник: <span id="active-user-name" class="text-emerald-600">...</span>
-            </h2>
-            <div id="worker-task" class="bg-emerald-50 p-5 rounded-[2rem] mb-8 text-emerald-900 text-sm italic font-bold border border-emerald-100 text-center">
-                Ожидание техкарты...
+        <div id="fields-status" class="space-y-4">
             </div>
-            
-            <div class="space-y-5">
-                <div>
-                    <label class="text-[10px] font-black uppercase text-gray-400 ml-4 mb-2 block">Расход ГСМ</label>
-                    <input id="fuel-use" type="number" placeholder="литры" class="w-full p-5 bg-gray-50 border border-gray-200 rounded-2xl outline-none text-lg font-bold focus:ring-2 focus:ring-emerald-500">
-                </div>
-                <div>
-                    <label class="text-[10px] font-black uppercase text-gray-400 ml-4 mb-2 block">Питание / Быт</label>
-                    <input id="misc-use" type="number" placeholder="сумма в тенге" class="w-full p-5 bg-gray-50 border border-gray-200 rounded-2xl outline-none text-lg font-bold focus:ring-2 focus:ring-emerald-500">
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4 pt-2">
-                    <button onclick="capturePhoto()" class="bg-slate-100 p-5 rounded-2xl text-[10px] font-black uppercase text-slate-500 tracking-wider hover:bg-slate-200 transition-colors">📸 Фото чека</button>
-                    <button onclick="getGeo()" class="bg-slate-100 p-5 rounded-2xl text-[10px] font-black uppercase text-slate-500 tracking-wider hover:bg-slate-200 transition-colors">📍 Локация</button>
-                </div>
-
-                <button onclick="finishTask()" class="w-full btn-gradient text-white p-6 rounded-2xl font-black uppercase text-sm tracking-[0.2em] shadow-xl shadow-emerald-100 active:scale-95 transition-all mt-4">Завершить работу</button>
-            </div>
-        </div>
     </div>
 
     <script>
-        let currentUser = '';
+        // Логика авторизации
+        const users = {
+            'Boss': { pass: '12345', role: 'owner' },
+            'M1': { pass: '5555', role: 'worker' }
+        };
 
         function login() {
-            const userInput = document.getElementById('login-user').value.trim();
-            if (!userInput) return alert('Введите логин');
-            
-            currentUser = userInput;
-            document.getElementById('login-screen').classList.add('hidden');
-            
-            if (userInput.toLowerCase() === 'boss') {
-                document.getElementById('owner-screen').classList.remove('hidden');
-            } else {
-                document.getElementById('worker-screen').classList.remove('hidden');
-                document.getElementById('active-user-name').innerText = userInput;
-            }
-            refreshData();
-        }
+            const id = document.getElementById('login-id').value;
+            const pass = document.getElementById('login-pass').value;
 
-        async function refreshData() {
-            try {
-                const res = await fetch(`${API_URL}/api/state`);
-                const state = await res.json();
+            if (users[id] && users[id].pass === pass) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('header').classList.remove('hidden');
                 
-                // Владелец
-                const fEl = document.getElementById('owner-fuel');
-                const wEl = document.getElementById('owner-weight');
-                if(fEl) fEl.innerText = state.fuel.toLocaleString() + ' л';
-                if(wEl) wEl.innerText = state.totalWeight.toLocaleString() + ' кг';
-
-                // Сотрудник
-                const tEl = document.getElementById('worker-task');
-                if(tEl) {
-                    tEl.innerText = state.activeCycle ? `Текущая задача: ${state.activeCycle.culture}` : "Задач пока нет. Ждите команду.";
+                if (users[id].role === 'owner') {
+                    document.getElementById('owner-screen').classList.remove('hidden');
+                } else {
+                    document.getElementById('worker-screen').classList.remove('hidden');
                 }
-
-                // Весовая
-                const wc = document.getElementById('weighing-card');
-                if(wc) {
-                    state.truckInWay ? wc.classList.remove('hidden') : wc.classList.add('hidden');
-                }
-
-                // KPI
-                const kt = document.getElementById('kpi-table');
-                if(kt) {
-                    kt.innerHTML = Object.entries(state.workers).map(([id, w]) => `
-                        <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-gray-50">
-                            <span class="text-sm font-bold text-slate-700 tracking-tight">${w.name}</span>
-                            <span class="text-emerald-600 font-black tracking-tighter text-lg">+ ${Math.round(w.bonus).toLocaleString()} ₸</span>
-                        </div>
-                    `).join('');
-                }
-            } catch (e) { 
-                console.log("Ожидание сервера..."); 
+            } else {
+                alert("Неверный логин или пароль!");
             }
         }
 
-        async function startCycle() {
-            const culture = prompt("Введите культуру (напр. Сахарная свекла 12га):", "Сахарная свекла");
-            if (!culture) return;
-            await fetch(`${API_URL}/api/start-cycle`, {
+        function logout() {
+            location.reload(); // Самый быстрый способ сбросить сессию
+        }
+
+        async function addField() {
+            const name = document.getElementById('new-field-name').value;
+            const culture = document.getElementById('new-field-culture').value;
+            const workerId = document.getElementById('new-field-worker').value;
+
+            // Отправляем на сервер
+            await fetch(`${API_URL}/api/add-field`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ culture })
+                body: JSON.stringify({ name, culture, workerId })
             });
+            alert("Участок закреплен!");
             refreshData();
         }
-
-        async function finishTask() {
-            const fuel = document.getElementById('fuel-use').value;
-            if(!fuel) return alert("Укажите расход топлива");
-            
-            await fetch(`${API_URL}/api/finish-task`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ workerId: currentUser, fuelSpent: parseInt(fuel) })
-            });
-            alert("Данные отправлены! Машина зафиксирована.");
-            document.getElementById('fuel-use').value = '';
-            document.getElementById('misc-use').value = '';
-            refreshData();
-        }
-
-        async function acceptWeight() {
-            const weight = document.getElementById('net-weight').value;
-            if(!weight) return alert("Введите вес!");
-            await fetch(`${API_URL}/api/accept-weight`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ weight: parseFloat(weight), workerId: 'M1' })
-            });
-            document.getElementById('net-weight').value = '';
-            refreshData();
-        }
-
-        function getGeo() {
-            navigator.geolocation.getCurrentPosition((pos) => {
-                alert("Геолокация подтверждена: Вы на поле.");
-            }, () => alert("Ошибка GPS: Включите доступ к геопозиции"));
-        }
-
-        function capturePhoto() {
-            alert("Камера активна. Фото будет прикреплено к отчету.");
-        }
-
-        // Авто-обновление
-        setInterval(refreshData, 5000);
     </script>
 </body>
-</html>
