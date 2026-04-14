@@ -1,116 +1,104 @@
-/* Общие настройки */
-.hidden { display: none !important; }
-input, select { outline: none; }
-body { -webkit-tap-highlight-color: transparent; }
+/* ОБЩИЕ НАСТРОЙКИ */
+.hidden { display: none !important; } /* Скрывает любой элемент, если у него есть этот класс | СИСТЕМА */
+input, select { outline: none; } /* Убирает стандартную синюю рамку при нажатии на поля | ДИЗАЙН */
+body { -webkit-tap-highlight-color: transparent; } /* Убирает серый квадрат при нажатии на кнопки в iPhone | МОБИЛЬНЫЕ */
 
-/* Кастомные классы для дизайна */
-.input-field {
-    width: 100%;
-    padding: 1.25rem;
-    background-color: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 1.5rem;
-    font-weight: 700;
+/* ПОЛЯ ВВОДА (Инпуты) */
+.input-field { 
+    width: 100%; /* Растягивает поле на всю ширину | РАЗМЕТКА */
+    padding: 1rem 1.25rem; /* Внутренние отступы, чтобы текст не прилипал к краям | ВИЗУАЛ */
+    background: #f8fafc; /* Светло-серый фон поля | ЦВЕТ */
+    border: 1px solid #e2e8f0; /* Тонкая рамка вокруг поля | ВИЗУАЛ */
+    border-radius: 1.25rem; /* Закругленные углы (как в современных iOS приложениях) | ФОРМА */
+    font-weight: 700; /* Жирный шрифт для вводимых данных | ТЕКСТ */
+    font-size: 0.9rem; /* Размер шрифта | ТЕКСТ */
 }
 
-.select-field {
-    width: 100%;
-    padding: 1rem;
-    background-color: #eff6ff;
-    border: 2px solid #dbeafe;
-    border-radius: 1.5rem;
-    font-weight: 900;
-    color: #2563eb;
-    text-transform: uppercase;
-    font-size: 0.75rem;
+/* ВЫПАДАЮЩИЕ СПИСКИ (Селекты) */
+.select-field { 
+    width: 100%; /* На всю ширину | РАЗМЕТКА */
+    padding: 1rem; /* Отступы | ВИЗУАЛ */
+    background: #eff6ff; /* Нежно-голубой фон для списков | ЦВЕТ */
+    border: 2px solid #dbeafe; /* Синяя рамка | ВИЗУАЛ */
+    border-radius: 1.25rem; /* Закругление | ФОРМА */
+    font-weight: 900; /* Очень жирный шрифт | ТЕКСТ */
+    color: #2563eb; /* Ярко-синий цвет текста | ЦВЕТ */
+    text-transform: uppercase; /* Все буквы заглавные | ТЕКСТ */
+    font-size: 0.7rem; /* Чуть уменьшенный размер для компактности | ТЕКСТ */
 }
 
-.btn-primary {
-    width: 100%;
-    background-color: #10b981;
-    color: white;
-    font-weight: 900;
-    padding: 1.25rem;
-    border-radius: 1.5rem;
-    text-transform: uppercase;
-    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+/* КНОПКИ (Главные) */
+.btn-primary { 
+    width: 100%; /* На всю ширину | РАЗМЕТКА */
+    background: #10b981; /* Зеленый цвет (изумрудный) | ЦВЕТ */
+    color: white; /* Белый текст | ТЕКСТ */
+    font-weight: 900; /* Максимально жирный шрифт | ТЕКСТ */
+    padding: 1.25rem; /* Большая удобная зона для нажатия пальцем | МОБИЛЬНЫЕ */
+    border-radius: 1.5rem; /* Закругление | ФОРМА */
+    text-transform: uppercase; /* Заглавные буквы | ТЕКСТ */
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3); /* Тень, чтобы кнопка казалась объемной | ВИЗУАЛ */
 }
 
-.btn-secondary {
-    width: 100%;
-    background-color: #2563eb;
-    color: white;
-    font-weight: 900;
-    padding: 1.25rem;
-    border-radius: 1.5rem;
-    text-transform: uppercase;
+/* КНОПКИ (Вторичные и Темные) */
+.btn-secondary { width: 100%; background: #2563eb; color: white; font-weight: 900; padding: 1.25rem; border-radius: 1.5rem; text-transform: uppercase; } /* Синяя кнопка | ЦВЕТ */
+.btn-dark { width: 100%; background: #0f172a; color: white; padding: 1.25rem; border-radius: 2rem; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; } /* Черная кнопка для задач | ЦВЕТ */
+.btn-link { width: 100%; color: #94a3b8; font-weight: 700; font-size: 0.65rem; text-transform: uppercase; text-align: center; margin-top: 1rem; } /* Кнопка-ссылка (Назад/Регистрация) | ТЕКСТ */
+.btn-logout { font-size: 0.65rem; font-weight: 900; color: #f87171; border: 1px solid #fee2e2; padding: 0.5rem 0.75rem; border-radius: 0.75rem; } /* Кнопка Выход (красная рамка) | ЦВЕТ */
+
+/* ГИГАНТСКАЯ КНОПКА (Весовая) */
+.btn-round { 
+    background: #10b981; /* Зеленый фон | ЦВЕТ */
+    color: white; /* Белый текст | ТЕКСТ */
+    padding: 4rem; /* Огромные отступы, чтобы сделать кнопку круглой | ФОРМА */
+    border-radius: 9999px; /* Идеальный круг | ФОРМА */
+    font-weight: 900; /* Жирный шрифт | ТЕКСТ */
+    text-transform: uppercase; /* Заглавные буквы | ТЕКСТ */
+    border: 12px solid white; /* Белая кайма вокруг круга | ВИЗУАЛ */
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); /* Глубокая тень для эффекта парения | ВИЗУАЛ */
 }
 
-.btn-dark {
-    width: 100%;
-    background-color: #0f172a;
-    color: white;
-    padding: 1.25rem;
-    border-radius: 2rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: 0.75rem;
+/* НАВИГАЦИЯ (Меню вкладок) */
+.nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: white; border-bottom: 1px solid #e2e8f0; font-size: 0.55rem; font-weight: 900; text-transform: uppercase; position: sticky; top: 76px; z-index: 40; } /* Сетка на 4 колонки для тебя | РАЗМЕТКА */
+.nav-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); background: white; border-bottom: 1px solid #e2e8f0; font-size: 0.55rem; font-weight: 900; text-transform: uppercase; position: sticky; top: 76px; z-index: 40; } /* Сетка на 3 колонки для админа | РАЗМЕТКА */
+.tab-btn { color: #94a3b8; border-bottom: 4px solid transparent; transition: 0.3s; padding: 1rem; } /* Стиль неактивной вкладки | ВИЗУАЛ */
+.active-tab { border-bottom: 4px solid #10b981; color: #10b981; } /* Подсветка активной вкладки зеленой полоской | ВИЗУАЛ */
+
+/* МОДАЛЬНЫЕ ОКНА (Всплывашки) */
+.modal-overlay { 
+    position: fixed; /* Фиксирует окно поверх всего экрана | РАЗМЕТКА */
+    inset: 0; /* Растягивает на всю ширину и высоту | РАЗМЕТКА */
+    background: rgba(0,0,0,0.8); /* Полупрозрачный черный фон для акцента | ЦВЕТ */
+    backdrop-filter: blur(4px); /* Размытие заднего плана (эффект матового стекла) | ВИЗУАЛ */
+    z-index: 1000; /* Слой поверх всех остальных | РАЗМЕТКА */
+    display: flex; /* Для центровки окна внутри | РАЗМЕТКА */
+    align-items: center; /* Центровка по вертикали | РАЗМЕТКА */
+    justify-content: center; /* Центровка по горизонтали | РАЗМЕТКА */
+    padding: 1rem; /* Отступ от краев экрана на мобильных | МОБИЛЬНЫЕ */
 }
 
-.btn-link {
-    width: 100%;
-    color: #94a3b8;
-    font-weight: 700;
-    font-size: 0.65rem;
-    text-transform: uppercase;
+.modal-content { 
+    background: white; /* Белый фон самого окна | ЦВЕТ */
+    width: 100%; /* На всю ширину (но не более max-width) | РАЗМЕТКА */
+    max-width: 24rem; /* Ограничение ширины окна | РАЗМЕТКА */
+    border-radius: 3rem; /* Очень сильное закругление углов | ФОРМА */
+    padding: 2rem; /* Внутренние отступы контента | ВИЗУАЛ */
 }
 
-.btn-logout {
-    font-size: 0.65rem;
-    font-weight: 900;
-    color: #f87171;
-    border: 1px solid #fee2e2;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.75rem;
+/* УВЕДОМЛЕНИЯ (Анимация) */
+.notif-anim { 
+    animation: slideDown 0.5s ease-out; /* Запуск анимации появления сверху | СИСТЕМА */
 }
 
-.btn-cancel {
-    width: 100%;
-    margin-top: 0.5rem;
-    color: #cbd5e1;
-    font-weight: 700;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    padding: 0.5rem;
-}
-
-.btn-round {
-    background-color: #10b981;
-    color: white;
-    padding: 4rem;
-    border-radius: 9999px;
-    font-weight: 900;
-    text-transform: uppercase;
-    border: 12px solid white;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-.nav-grid { display: grid; grid-template-columns: repeat(4, 1fr); background: white; border-bottom: 1px solid #e2e8f0; font-size: 0.55rem; font-weight: 900; text-transform: uppercase; position: sticky; top: 76px; z-index: 40; }
-.nav-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); background: white; border-bottom: 1px solid #e2e8f0; font-size: 0.55rem; font-weight: 900; text-transform: uppercase; position: sticky; top: 76px; z-index: 40; }
-
-.tab-btn { color: #94a3b8; }
-.active-tab { border-bottom: 4px solid #10b981; color: #10b981; }
-
-.role-badge { font-size: 0.55rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em; }
-
-.modal-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
-.modal-content { background: white; width: 100%; max-width: 24rem; border-radius: 3rem; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-
-.scales-container { background: white; padding: 2.5rem; border-radius: 3rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); text-align: center; border: 4px dashed #f1f5f9; }
-
-/* Анимация уведомлений */
-.notif-anim { animation: slideDown 0.5s ease-out; }
 @keyframes slideDown { 
-    from { transform: translateY(-100%); opacity: 0; } 
-    to { transform: translateY(0); opacity: 1; } 
+    from { transform: translateY(-100%); opacity: 0; } /* Начало: за экраном сверху и прозрачно | СИСТЕМА */
+    to { transform: translateY(0); opacity: 1; } /* Конец: на своем месте и видно | СИСТЕМА */
+}
+
+/* КАРТОЧКА РОЛИ */
+.role-badge { 
+    font-size: 0.55rem; /* Маленький текст | ТЕКСТ */
+    font-weight: 700; /* Жирный | ТЕКСТ */
+    color: #cbd5e1; /* Серый цвет | ЦВЕТ */
+    text-transform: uppercase; /* Заглавные буквы | ТЕКСТ */
+    letter-spacing: 0.05em; /* Расстояние между буквами | ТЕКСТ */
 }
