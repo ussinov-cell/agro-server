@@ -5,75 +5,86 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Глобальное состояние системы
+// Основная база данных (в памяти сервера)
 let systemState = {
-    fuel: 1000,
-    totalWeight: 0,
-    truckInWay: null,
-    lastAccepted: null,
+    fuel: 1000,           // Общий остаток ГСМ на складе
+    totalWeight: 0,       // Общий принятый вес за всё время
+    truckInWay: null,     // Данные о машине, которая сейчас едет на весовую
+    lastAccepted: null,   // Данные о последнем подтвержденном взвешивании
     
-    // Список сотрудников (база пользователей)
+    // Список всех пользователей системы
     users: [
         { id: 'Boss', pass: '12345', role: 'owner', name: 'Владелец', phone: '-' },
-        { id: 'M1', pass: '5555', role: 'worker', name: 'Алексей', phone: '87071234567' }
+        { id: 'M1', pass: '5555', role: 'worker', name: 'Алексей (Админ)', phone: '87071112233' }
     ],
 
-    // Список участков с привязкой к сотрудникам
+    // Список участков и их текущее состояние
     fields: [
         { 
             id: 1, 
-            name: "Участок №1 (Свекла)", 
-            address: "Северный выезд, заправка", 
-            area: "12", 
-            assignedTo: "M1", // Кто отвечает
-            stage: "Ожидание", // Ожидание -> Принято -> Пахота -> Завершено
-            lastUpdate: Date.now() 
+            name: "Стартовый участок", 
+            address: "Центральный сектор", 
+            area: "10", 
+            assignedTo: "M1", 
+            stage: "Ожидание" 
         }
     ],
 
-    // Статистика работ и премий
+    // Статистика по каждому сотруднику (бонусы, расходы, приходы)
     workers: {
-        'M1': { name: 'Алексей', bonus: 0, fuelSpent: 0, totalBrought: 0, moneySpent: 0 }
+        'M1': { name: 'Алексей (Админ)', bonus: 0, fuelSpent: 0, totalBrought: 0, moneySpent: 0 }
     }
 };
 
-// 1. Получение общего состояния
-app.get('/api/state', (req, res) => res.json(systemState));
+// --- ОСНОВНЫЕ ЗАПРОСЫ ---
 
-// 2. Регистрация нового сотрудника
+// 1. Получение актуального состояния системы
+app.get('/api/state', (req, res) => {
+    res.json(systemState);
+});
+
+// 2. Получение списка только рабочих (для выбора в выпадающем списке у Boss)
+app.get('/api/workers', (req, res) => {
+    const workerList = systemState.users
+        .filter(u => u.role === 'worker')
+        .map(u => ({ id: u.id, name: u.name }));
+    res.json(workerList);
+});
+
+// --- УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ ---
+
+// 3. Регистрация нового сотрудника
 app.post('/api/register', (req, res) => {
     const { id, pass, name, phone, role } = req.body;
     
-    // Проверка, существует ли уже такой ID
     if (systemState.users.find(u => u.id === id)) {
-        return res.status(400).json({ error: "ID уже занят" });
+        return res.status(400).json({ error: "Этот ID уже занят" });
     }
 
     const newUser = { id, pass, name, phone, role: role || 'worker' };
     systemState.users.push(newUser);
 
-    // Создаем карточку статистики для нового рабочего
     if (newUser.role === 'worker') {
         systemState.workers[id] = { name, bonus: 0, fuelSpent: 0, totalBrought: 0, moneySpent: 0 };
     }
 
-    console.log(`Зарегистрирован новый пользователь: ${name}`);
     res.json({ success: true });
 });
 
-// 3. Назначение участка сотруднику (выполняет Boss)
+// --- УПРАВЛЕНИЕ УЧАСТКАМИ ---
+
+// 4. Создание или обновление участка (назначение ответственного)
 app.post('/api/assign-field', (req, res) => {
     const { fieldId, workerId, name, address, area } = req.body;
     
-    // Если участка нет — создаем, если есть — обновляем
     let field = systemState.fields.find(f => f.id == fieldId);
     
     if (field) {
         field.assignedTo = workerId;
-        field.name = name || field.name;
-        field.address = address || field.address;
-        field.area = area || field.area;
-        field.stage = "Ожидание"; // Сбрасываем стадию при переназначении
+        field.name = name;
+        field.address = address;
+        field.area = area;
+        field.stage = "Ожидание"; 
     } else {
         systemState.fields.push({
             id: fieldId || Date.now(),
@@ -83,28 +94,36 @@ app.post('/api/assign-field', (req, res) => {
     res.json({ success: true });
 });
 
-// 4. Обновление статуса участка (выполняет Админ/Рабочий)
+// 5. Обновление статуса работ на участке (Админ нажимает кнопки)
 app.post('/api/field-status', (req, res) => {
     const { fieldId, newStage } = req.body;
     const field = systemState.fields.find(f => f.id == fieldId);
     
     if (field) {
         field.stage = newStage;
-        field.lastUpdate = Date.now();
-        console.log(`Статус участка ${field.name} изменен на: ${newStage}`);
         res.json({ success: true });
     } else {
         res.status(404).json({ error: "Участок не найден" });
     }
 });
 
-// 5. Стандартные функции (ГСМ, Весовая, Машины)
+// 6. Удаление участка
+app.post('/api/delete-field', (req, res) => {
+    const { fieldId } = req.body;
+    systemState.fields = systemState.fields.filter(f => f.id != fieldId);
+    res.json({ success: true });
+});
+
+// --- ГСМ И СКЛАД ---
+
+// 7. Пополнение склада ГСМ (Boss)
 app.post('/api/stock-up', (req, res) => {
     const { amount } = req.body;
     if (amount) systemState.fuel += parseFloat(amount);
     res.json({ success: true });
 });
 
+// 8. Списание ГСМ сотрудником
 app.post('/api/spend-resources', (req, res) => {
     const { fuel, workerId } = req.body;
     if (systemState.workers[workerId]) {
@@ -115,29 +134,46 @@ app.post('/api/spend-resources', (req, res) => {
     res.json({ success: true });
 });
 
+// --- ВЕСОВАЯ И ЛОГИСТИКА ---
+
+// 9. Отправка машины на весовую (Админ)
 app.post('/api/send-truck', (req, res) => {
     const { model, plate, workerId } = req.body;
-    systemState.truckInWay = { model, plate, workerId, time: Date.now() };
+    systemState.truckInWay = { 
+        model, 
+        plate, 
+        workerId, 
+        time: Date.now() 
+    };
     res.json({ success: true });
 });
 
+// 10. Приемка веса и начисление премии (Boss)
 app.post('/api/accept-weight', (req, res) => {
     const { weight } = req.body;
     const w = parseFloat(weight);
+    
+    // Определяем, чья машина приехала
     const workerId = systemState.truckInWay ? systemState.truckInWay.workerId : 'M1';
     
     if (systemState.workers[workerId]) {
         systemState.workers[workerId].totalBrought += w;
+        // Пример расчета премии: 0.5 тенге за 1 кг
         systemState.workers[workerId].bonus += (w * 0.5);
     }
+
+    systemState.totalWeight += w;
     systemState.lastAccepted = { workerId, weight: w, time: Date.now() };
-    systemState.truckInWay = null;
+    systemState.truckInWay = null; // Очищаем путь, машина приехала
+    
     res.json({ success: true });
 });
 
+// Запуск сервера
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`-----------------------------------`);
-    console.log(`АГРО-СЕРВЕР ЗАПУЩЕН НА ПОРТУ ${PORT}`);
-    console.log(`-----------------------------------`);
+    console.log(`=========================================`);
+    console.log(`AGRO-SERVER СИСТЕМА УПРАВЛЕНИЯ ЗАПУЩЕНА`);
+    console.log(`ПОРТ: ${PORT}`);
+    console.log(`=========================================`);
 });
