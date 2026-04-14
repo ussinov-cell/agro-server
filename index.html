@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>АГРО-ДИСПЕТЧЕР</title>
+    <title>АГРО-ДИСПЕТЧЕР 2.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .hidden { display: none !important; }
@@ -16,15 +16,15 @@
 
     <div id="app-header" class="hidden bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-50">
         <div class="flex flex-col">
-            <span class="font-black text-emerald-600 text-xs uppercase tracking-[0.2em]">Агро-Диспетчер</span>
+            <span class="font-black text-emerald-600 text-xs uppercase tracking-widest">Агро-Диспетчер</span>
             <span id="user-info" class="text-[9px] font-bold text-gray-400 uppercase"></span>
         </div>
         <button onclick="logout()" class="text-[10px] font-black text-red-400 border border-red-100 px-3 py-1.5 rounded-xl hover:bg-red-50">ВЫЙТИ</button>
     </div>
 
     <div id="login-screen" class="flex items-center justify-center min-h-screen p-6">
-        <div class="bg-white p-10 rounded-[3rem] card-shadow w-full max-w-[400px] border border-gray-50">
-            <h1 class="text-center font-black text-2xl mb-10 tracking-widest text-emerald-600">ВХОД</h1>
+        <div class="bg-white p-10 rounded-[3rem] card-shadow w-full max-w-[400px] border border-gray-50 text-center">
+            <h1 class="font-black text-2xl mb-10 tracking-widest text-emerald-600">ВХОД</h1>
             <input id="login-id" type="text" placeholder="Логин (Boss / M1)" class="w-full p-5 mb-4 bg-gray-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500">
             <input id="login-pass" type="password" placeholder="Пароль" class="w-full p-5 mb-8 bg-gray-50 border rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500">
             <button onclick="login()" class="w-full btn-gradient text-white font-black p-5 rounded-2xl tracking-widest uppercase shadow-xl shadow-emerald-100">Войти</button>
@@ -33,86 +33,83 @@
 
     <div id="owner-tabs" class="hidden grid grid-cols-3 gap-2 px-4 mt-4 max-w-lg mx-auto">
         <button id="tab-main" onclick="switchTab('owner-main')" class="active-tab p-4 rounded-2xl text-[10px] font-black transition-all">ГЛАВНАЯ</button>
-        <button id="tab-scales" onclick="switchTab('owner-scales')" class="bg-white p-4 rounded-2xl text-[10px] font-black shadow-sm transition-all">ВЕСОВАЯ</button>
+        <button id="tab-scales" onclick="switchTab('owner-scales')" class="bg-white p-4 rounded-2xl text-[10px] font-black shadow-sm transition-all text-blue-600">ВЕСОВАЯ</button>
         <button id="tab-stock" onclick="switchTab('owner-stock')" class="bg-white p-4 rounded-2xl text-[10px] font-black shadow-sm transition-all text-orange-600">СКЛАД</button>
     </div>
 
-    <div id="owner-main" class="tab-content hidden p-4 max-w-lg mx-auto space-y-6">
+    <div id="owner-main" class="tab-content hidden p-4 max-w-lg mx-auto space-y-4">
         <div class="bg-white rounded-[2.5rem] card-shadow p-8 border-t-[8px] border-emerald-500">
             <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <p class="text-[9px] font-black text-gray-400 uppercase mb-2">ГСМ на складе</p>
-                    <p id="fuel-display" class="text-2xl font-black text-emerald-600 tracking-tighter">... л</p>
-                </div>
-                <div>
-                    <p class="text-[9px] font-black text-gray-400 uppercase mb-2">Общий Урожай</p>
-                    <p id="weight-display" class="text-2xl font-black text-blue-600 tracking-tighter">... кг</p>
-                </div>
+                <div><p class="text-[9px] font-black text-gray-400 uppercase mb-2">ГСМ</p><p id="fuel-display" class="text-2xl font-black text-emerald-600">... л</p></div>
+                <div><p class="text-[9px] font-black text-gray-400 uppercase mb-2">Урожай</p><p id="weight-display" class="text-2xl font-black text-blue-600">... кг</p></div>
             </div>
         </div>
         <div class="bg-white rounded-[2.5rem] card-shadow p-8">
             <h3 class="text-[10px] font-black text-gray-400 uppercase mb-6 tracking-widest">Управление участками</h3>
             <div class="space-y-3">
                 <input id="f-name" placeholder="Название участка" class="w-full p-4 bg-gray-50 border rounded-2xl text-sm outline-none">
-                <input id="f-culture" placeholder="Культура (напр. Свекла)" class="w-full p-4 bg-gray-50 border rounded-2xl text-sm outline-none">
+                <input id="f-culture" placeholder="Культура" class="w-full p-4 bg-gray-50 border rounded-2xl text-sm outline-none">
                 <select id="f-worker" class="w-full p-4 bg-gray-50 border rounded-2xl text-sm font-bold">
                     <option value="M1">Алексей (M1)</option>
                     <option value="M2">Иван (M2)</option>
                 </select>
-                <button onclick="startField()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em]">Закрепить и запустить</button>
+                <button onclick="startField()" class="w-full bg-slate-900 text-white p-4 rounded-2xl font-black text-[10px] uppercase tracking-widest">Запустить техкарту</button>
             </div>
         </div>
     </div>
 
     <div id="owner-scales" class="tab-content hidden p-4 max-w-lg mx-auto">
         <div class="bg-white rounded-[2.5rem] card-shadow p-8 border-t-[8px] border-blue-600">
-            <h2 class="font-black text-xs text-blue-600 uppercase mb-8 tracking-widest">🚛 Машины в пути</h2>
-            <div id="transit-list" class="space-y-4">
-                <div class="text-center py-10">
-                    <p class="text-gray-300 text-[10px] font-bold uppercase italic">Ожидание уведомлений...</p>
-                </div>
-            </div>
+            <h2 class="font-black text-xs text-blue-600 uppercase mb-8 tracking-widest">🚛 Ожидают взвешивания</h2>
+            <div id="transit-list" class="space-y-4 text-center py-6 text-gray-300 text-[10px] font-bold italic uppercase">Машин в пути нет</div>
         </div>
     </div>
 
     <div id="owner-stock" class="tab-content hidden p-4 max-w-lg mx-auto">
         <div class="bg-white rounded-[2.5rem] card-shadow p-8 border-t-[8px] border-orange-500">
-            <h2 class="font-black text-xs text-orange-600 uppercase mb-8 tracking-widest">📦 ПРИХОД ТМЦ</h2>
+            <h2 class="font-black text-xs text-orange-600 uppercase mb-8 tracking-widest text-center">📦 ПРИХОД ТМЦ</h2>
             <div class="space-y-4">
                 <select id="stock-type" class="w-full p-5 bg-gray-50 border rounded-2xl font-bold">
                     <option value="ГСМ">ГСМ (Дизель)</option>
                     <option value="Семена">Семена</option>
-                    <option value="Удобрения">Удобрения</option>
                 </select>
-                <input id="stock-val" type="number" placeholder="Количество" class="w-full p-5 bg-gray-50 border rounded-2xl text-xl font-black">
-                <button onclick="addStock()" class="w-full bg-orange-500 text-white p-5 rounded-2xl font-black text-xs uppercase shadow-lg shadow-orange-100">Добавить на склад</button>
+                <input id="stock-val" type="number" placeholder="Количество" class="w-full p-5 bg-gray-50 border rounded-2xl text-xl font-black outline-none focus:ring-2 focus:ring-orange-500">
+                <button onclick="addStock()" class="w-full bg-orange-500 text-white p-5 rounded-2xl font-black text-xs uppercase shadow-lg shadow-orange-100">Добавить на баланс</button>
             </div>
         </div>
     </div>
 
-    <div id="worker-screen" class="hidden p-4 max-w-lg mx-auto space-y-6">
-        <div class="bg-white rounded-[2.5rem] card-shadow p-8 border-t-[8px] border-emerald-500">
-            <div id="w-task" class="bg-emerald-50 p-6 rounded-3xl text-center mb-8 border border-emerald-100">
-                <p class="text-[10px] font-black text-emerald-400 uppercase mb-1">Ваша задача:</p>
-                <p id="task-text" class="font-bold text-emerald-900 italic">Ожидание...</p>
-            </div>
-            <div class="space-y-4">
-                <input id="w-fuel" type="number" placeholder="Расход ГСМ (л)" class="w-full p-5 bg-gray-50 border rounded-2xl outline-none text-lg font-bold">
-                <button onclick="openTruckModal()" class="w-full btn-gradient text-white p-6 rounded-3xl font-black uppercase text-sm tracking-widest shadow-xl shadow-emerald-100">Отправить машину</button>
-            </div>
+    <div id="worker-tabs" class="hidden grid grid-cols-2 gap-2 px-4 mt-4 max-w-lg mx-auto">
+        <button id="tab-w-main" onclick="switchWorkerTab('worker-main')" class="active-tab p-4 rounded-2xl text-[10px] font-black transition-all">РАСХОДЫ</button>
+        <button id="tab-w-harvest" onclick="switchWorkerTab('worker-harvest')" class="bg-white p-4 rounded-2xl text-[10px] font-black shadow-sm transition-all text-emerald-600">УБОРКА УРОЖАЯ</button>
+    </div>
+
+    <div id="worker-main" class="worker-tab-content hidden p-4 max-w-lg mx-auto space-y-4">
+        <div class="bg-white rounded-[2.5rem] card-shadow p-8 border-t-[8px] border-slate-700">
+            <h3 class="text-[10px] font-black text-gray-400 uppercase mb-6 tracking-widest text-center">Списание ГСМ / Быт</h3>
+            <input id="w-fuel" type="number" placeholder="Расход ГСМ (литры)" class="w-full p-5 bg-gray-50 border rounded-2xl mb-4 text-lg font-bold outline-none">
+            <input id="w-money" type="number" placeholder="Прочие расходы (тенге)" class="w-full p-5 bg-gray-50 border rounded-2xl mb-8 text-lg font-bold outline-none">
+            <button onclick="saveCosts()" class="w-full bg-slate-800 text-white p-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em]">Сохранить расходы</button>
         </div>
     </div>
 
-    <div id="truck-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-6 z-[100]">
+    <div id="worker-harvest" class="worker-tab-content hidden p-4 max-w-lg mx-auto">
+        <div class="bg-white rounded-[2.5rem] card-shadow p-8 border-t-[8px] border-emerald-500 text-center">
+            <p id="task-text" class="text-xs font-bold text-emerald-800 mb-8 italic">Ожидание команды от владельца...</p>
+            <button onclick="openTruckModal()" class="w-full btn-gradient text-white p-6 rounded-3xl font-black uppercase text-xs tracking-widest shadow-xl shadow-emerald-100">
+                🚛 Отправить машину
+            </button>
+        </div>
+    </div>
+
+    <div id="truck-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 z-[100]">
         <div class="bg-white w-full max-w-sm rounded-[3rem] p-10 card-shadow">
-            <h3 class="font-black text-xs mb-8 uppercase text-center tracking-widest text-gray-400">Данные машины</h3>
-            <div class="space-y-4">
-                <input id="t-model" placeholder="Марка (напр. КамАЗ)" class="w-full p-5 bg-gray-50 border rounded-2xl outline-none font-bold">
-                <input id="t-plate" placeholder="Гос. Номер (001 AAA)" class="w-full p-5 bg-gray-50 border rounded-2xl outline-none text-center font-black text-2xl uppercase tracking-tighter">
-                <div class="flex gap-3 pt-4">
-                    <button onclick="closeModal()" class="flex-1 p-5 bg-gray-100 rounded-2xl font-black text-[10px] uppercase">Отмена</button>
-                    <button onclick="sendTruck()" class="flex-1 p-5 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase">В ПУТЬ!</button>
-                </div>
+            <h3 class="font-black text-[10px] mb-8 uppercase text-center tracking-[0.3em] text-gray-400">Данные машины</h3>
+            <input id="t-model" placeholder="Марка (напр. КамАЗ)" class="w-full p-5 bg-gray-50 border rounded-2xl mb-4 outline-none font-bold">
+            <input id="t-plate" placeholder="Гос. Номер (001 AAA)" class="w-full p-5 bg-gray-50 border rounded-2xl mb-8 outline-none text-center font-black text-2xl uppercase tracking-tighter">
+            <div class="flex gap-3">
+                <button onclick="closeModal()" class="flex-1 p-5 bg-gray-100 rounded-2xl font-black text-[10px] uppercase">Отмена</button>
+                <button onclick="confirmSendTruck()" class="flex-1 p-5 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase">ОТПРАВИТЬ</button>
             </div>
         </div>
     </div>
@@ -123,7 +120,7 @@
 
         const users = {
             'Boss': { pass: '12345', role: 'owner', name: 'Владелец' },
-            'M1': { pass: '5555', role: 'worker', name: 'Алексей (M1)' }
+            'M1': { pass: '5555', role: 'worker', name: 'Администратор (M1)' }
         };
 
         function login() {
@@ -148,18 +145,28 @@
                 document.getElementById('owner-tabs').classList.remove('hidden');
                 switchTab('owner-main');
             } else {
-                document.getElementById('worker-screen').classList.remove('hidden');
+                document.getElementById('worker-tabs').classList.remove('hidden');
+                switchWorkerTab('worker-main');
             }
             refreshData();
         }
 
+        // ВКЛАДКИ ДЛЯ BOSS
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
             document.querySelectorAll('#owner-tabs button').forEach(b => b.classList.remove('active-tab', 'bg-white'));
-            
             document.getElementById(tabId).classList.remove('hidden');
-            const activeBtn = { 'owner-main': 'tab-main', 'owner-scales': 'tab-scales', 'owner-stock': 'tab-stock' }[tabId];
-            document.getElementById(activeBtn).classList.add('active-tab');
+            const btnId = { 'owner-main': 'tab-main', 'owner-scales': 'tab-scales', 'owner-stock': 'tab-stock' }[tabId];
+            document.getElementById(btnId).classList.add('active-tab');
+        }
+
+        // ВКЛАДКИ ДЛЯ АДМИНА
+        function switchWorkerTab(tabId) {
+            document.querySelectorAll('.worker-tab-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('#worker-tabs button').forEach(b => b.classList.remove('active-tab', 'bg-white'));
+            document.getElementById(tabId).classList.remove('hidden');
+            const btnId = { 'worker-main': 'tab-w-main', 'worker-harvest': 'tab-w-harvest' }[tabId];
+            document.getElementById(btnId).classList.add('active-tab');
         }
 
         async function refreshData() {
@@ -173,51 +180,80 @@
                 }
                 
                 if(document.getElementById('task-text')) {
-                    document.getElementById('task-text').innerText = data.activeCycle ? data.activeCycle.culture : "Нет активных задач";
+                    document.getElementById('task-text').innerText = data.activeCycle ? `Задача: ${data.activeCycle.culture}` : "Ждите указаний владельца";
                 }
 
-                // Уведомление о машинах в весовой
                 const list = document.getElementById('transit-list');
-                if(list && data.truckInWay) {
-                    list.innerHTML = `
-                        <div class="bg-blue-50 border-2 border-blue-100 p-6 rounded-[2rem] flex justify-between items-center">
-                            <div>
-                                <p class="text-[10px] font-black text-blue-400 uppercase">В пути</p>
-                                <p class="font-black text-blue-900 text-lg">Машина зафиксирована</p>
+                if(list) {
+                    if(data.truckInWay) {
+                        list.innerHTML = `
+                            <div class="bg-blue-50 border-2 border-blue-100 p-6 rounded-[2.5rem] text-left">
+                                <p class="text-[10px] font-black text-blue-400 uppercase mb-2 tracking-widest">Машина в пути</p>
+                                <p class="font-black text-blue-900 text-xl">${data.truckInWay.model}</p>
+                                <p class="font-bold text-blue-600 text-sm mb-6">${data.truckInWay.plate}</p>
+                                <input id="weight-input" type="number" placeholder="Чистый вес (кг)" class="w-full p-4 bg-white border rounded-2xl mb-4 font-black">
+                                <button onclick="acceptWeight()" class="w-full bg-blue-600 text-white p-4 rounded-2xl font-black text-[10px] uppercase">Принять и начислить KPI</button>
                             </div>
-                            <button onclick="switchTab('owner-scales')" class="bg-blue-600 text-white p-3 rounded-xl font-black text-[10px] uppercase">ВЗВЕСИТЬ</button>
-                        </div>
-                    `;
+                        `;
+                    } else {
+                        list.innerHTML = `<div class="py-10 text-gray-300 font-bold uppercase italic tracking-widest">Машин нет</div>`;
+                    }
                 }
             } catch(e) {}
         }
 
-        // Логика кнопок
+        // ЛОГИКА АДМИНА
         function openTruckModal() { document.getElementById('truck-modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('truck-modal').classList.add('hidden'); }
 
-        async function sendTruck() {
+        async function confirmSendTruck() {
             const m = document.getElementById('t-model').value;
             const p = document.getElementById('t-plate').value;
-            const f = document.getElementById('w-fuel').value;
-            if(!m || !p || !f) return alert("Заполните все поля!");
-
-            await fetch(`${API_URL}/api/finish-task`, {
+            if(!m || !p) return alert("Заполните марку и номер!");
+            await fetch(`${API_URL}/api/send-truck`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ fuelSpent: f })
+                body: JSON.stringify({ model: m, plate: p, workerId: currentUser })
             });
-            alert(`Машина ${m} (${p}) выехала! Владелец уведомлен.`);
-            closeModal();
+            alert("Машина отправлена!"); closeModal(); refreshData();
+        }
+
+        async function saveCosts() {
+            const f = document.getElementById('w-fuel').value;
+            const m = document.getElementById('w-money').value;
+            if(!f && !m) return alert("Введите данные!");
+            await fetch(`${API_URL}/api/spend-resources`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ fuel: f, money: m })
+            });
+            alert("Расходы сохранены!");
+            document.getElementById('w-fuel').value = '';
+            document.getElementById('w-money').value = '';
             refreshData();
+        }
+
+        // ЛОГИКА ВЛАДЕЛЬЦА
+        async function acceptWeight() {
+            const w = document.getElementById('weight-input').value;
+            if(!w) return alert("Введите вес!");
+            await fetch(`${API_URL}/api/accept-weight`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ weight: w, workerId: 'M1' })
+            });
+            alert("Вес зафиксирован!"); refreshData();
         }
 
         async function addStock() {
             const val = document.getElementById('stock-val').value;
             if(!val) return;
-            // Здесь будет запрос к API склада
-            alert(`Приход ${val} зафиксирован на складе.`);
-            document.getElementById('stock-val').value = '';
+            await fetch(`${API_URL}/api/stock-up`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ amount: val })
+            });
+            alert("Склад пополнен!"); document.getElementById('stock-val').value = ''; refreshData();
         }
 
         if(currentUser) initApp();
