@@ -1,68 +1,57 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
+
+app.use(cors()); // Позволяет интерфейсу общаться с сервером
 app.use(express.json());
 
-// Имитация базы данных (в реальном проекте здесь будет подключение к PostgreSQL)
-let db = {
+// Имитация базы данных (в будущем подключим PostgreSQL)
+let state = {
     fuel: 5000,
     totalWeight: 0,
-    fields: [
-        { id: 1, name: "Поле №1", culture: "Сахарная свекла", area: 12, K: 1.1, startDate: "2026-04-10" }
-    ],
-    tasks: [],
-    users: [
-        { id: 1, name: "Алексей", role: "M1", bonus: 0 }
-    ]
+    truckInWay: false,
+    activeCycle: null,
+    workers: {
+        "M1": { name: "Админ 1", bonus: 0, lastTask: "" },
+        "M2": { name: "Админ 2", bonus: 0, lastTask: "" },
+        "M3": { name: "Админ 3", bonus: 0, lastTask: "" }
+    }
 };
 
-// 1. ЗАПУСК ЦИКЛА (Только для Тебя)
+// Получить текущее состояние системы
+app.get('/api/state', (req, res) => res.json(state));
+
+// Запуск техкарты (Владелец)
 app.post('/api/start-cycle', (req, res) => {
-    const { fieldId, date } = req.body;
-    // Логика: Программа автоматически генерирует задачи на основе даты старта
-    const field = db.fields.find(f => f.id === fieldId);
-    field.startDate = date;
-    
-    // Пример авто-планирования:
-    const tasks = [
-        { name: "Пахота", day: 1 },
-        { name: "Посев", day: 5 },
-        { name: "Первый полив", day: 12 }
-    ];
-    
-    res.json({ message: "Техкарта развернута", schedule: tasks });
+    const { field, culture, date } = req.body;
+    state.activeCycle = { field, culture, startDate: date, day: 1 };
+    res.json({ message: "Техкарта запущена", state });
 });
 
-// 2. ОТЧЕТ СОТРУДНИКА (Списание ресурсов + Гео-контроль)
+// Отчет сотрудника (Завершение задачи)
 app.post('/api/finish-task', (req, res) => {
-    const { userId, fuelSpent, weight, coords } = req.body;
+    const { workerId, fuelSpent, miscCost, coords } = req.body;
     
-    // Проверка Гео-зоны (упрощенно)
-    if (!coords || !coords.lat) {
-        return res.status(403).json({ error: "Вы не на участке!" });
-    }
+    if (state.fuel < fuelSpent) return res.status(400).json({ error: "Недостаточно ГСМ на складе" });
 
-    // Списание ГСМ со склада
-    db.fuel -= fuelSpent;
+    state.fuel -= fuelSpent;
+    state.truckInWay = true;
+    state.workers[workerId].lastTask = "Работа на " + state.activeCycle.field + " завершена";
     
-    // Учет веса и расчет KPI (Бонус = Вес * Коэффициент)
-    const user = db.users.find(u => u.id === userId);
-    const field = db.fields[0]; // Берем текущее поле
-    user.bonus += (weight * field.K);
-    
-    res.json({ 
-        status: "Успешно", 
-        remainingFuel: db.fuel,
-        yourBonus: user.bonus 
-    });
+    res.json({ message: "Данные приняты, машина отправлена", state });
 });
 
-// 3. ОТЧЕТ ДЛЯ ВЛАДЕЛЬЦА (Аналитика)
-app.get('/api/owner-report', (req, res) => {
-    res.json({
-        totalFuel: db.fuel,
-        totalHarvest: db.totalWeight,
-        ranking: db.users.sort((a, b) => b.bonus - a.bonus)
-    });
+// Приемка на весовой (Владелец)
+app.post('/api/accept-weight', (req, res) => {
+    const { weight, workerId } = req.body;
+    const K = 1.1; // Коэффициент сложности (можно сделать динамическим)
+    
+    state.totalWeight += parseFloat(weight);
+    state.workers[workerId].bonus += (weight * K * 0.5); // Формула премии
+    state.truckInWay = false;
+    
+    res.json({ message: "Вес учтен, KPI обновлен", state });
 });
 
-app.listen(3000, () => console.log('Сервер Агро-системы запущен на порту 3000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
